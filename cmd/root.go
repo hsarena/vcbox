@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/vmware/govmomi"
 
-	"github.com/hsarena/vcbox/pkg/vcbox"
+	"github.com/hsarena/vcbox/pkg/box"
 )
 
 type vcCred struct {
@@ -44,12 +44,11 @@ var rootCmd = &cobra.Command{
 		}
 
 		defer c.Logout(ctx)
-		dcs, err := vcbox.DCDiscovery(c)
+		v, err := box.DiscoverDCVMMap(c)
 		if err != nil {
 			fmt.Printf("%s", err.Error())
 		}
-		vms, err := vcbox.VMDiscovery(c, "AFR")
-		vcbox.NewUi(dcs,vms)
+		box.NewUi(v)
 	},
 }
 
