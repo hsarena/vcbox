@@ -48,7 +48,7 @@ var rootCmd = &cobra.Command{
 		if err != nil {
 			fmt.Printf("%s", err.Error())
 		}
-		box.NewUi(v)
+		box.NewNewUi(v)
 	},
 }
 

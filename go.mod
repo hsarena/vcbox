@@ -7,6 +7,7 @@ require (
 	github.com/rivo/tview v0.0.0-20231206124440-5f078138442e
 	github.com/spf13/cobra v1.8.0
 	github.com/vmware/govmomi v0.34.1
+	golang.org/x/exp v0.0.0-20231226003508-02704c960a9b
 )
 
 require (
