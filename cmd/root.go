@@ -7,10 +7,9 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/hsarena/vcbox/pkg/vm"
 	"github.com/spf13/cobra"
 	"github.com/vmware/govmomi"
-
-	"github.com/hsarena/vcbox/pkg/box"
 )
 
 type vcCred struct {
@@ -21,7 +20,6 @@ type vcCred struct {
 }
 
 var (
-	dcName string
 	vcc    vcCred
 )
 
@@ -42,13 +40,39 @@ var rootCmd = &cobra.Command{
 		if err != nil {
 			fmt.Printf("%s", err.Error())
 		}
-
-		defer c.Logout(ctx)
-		v, err := box.DiscoverDCVMMap(c)
+		discovery := vm.NewDiscoveryService(c)
+		dc, err:= discovery.DiscoverDatacenters()
 		if err != nil {
 			fmt.Printf("%s", err.Error())
 		}
-		box.NewNewUi(v)
+		
+		for _ , d := range dc {
+			hosts, err := discovery.DiscoverHosts(d)
+			if err != nil {
+				fmt.Printf("%s", err.Error())
+			}
+			for _, h := range hosts {
+				fmt.Printf("host: %s",h.Name())
+			}
+			vm, err := discovery.DiscoverVMsInsideDC(d)
+			if err != nil {
+				fmt.Printf("%s", err.Error())
+			}
+			for _, v := range vm {
+				fmt.Println(v.Name())
+				vmInfo, err := discovery.DiscoverVMInfo(v)
+				if err != nil {
+					// Handle the error
+					return
+				}
+				vmDetailsText := fmt.Sprintf("Name: %s\nHost: %s\nCPU: %d\nMemory: %d MB\nOS: %s\nIPs: %s\nStatus: %s",
+					vmInfo.Name, vmInfo.Host, vmInfo.CPU, vmInfo.Memory, vmInfo.OS, vmInfo.IPs, vmInfo.Status)
+				fmt.Println(vmDetailsText)
+			
+			}
+		}
+
+		defer c.Logout(ctx)
 	},
 }
 
@@ -73,27 +97,26 @@ func init() {
 	rootCmd.Flags().StringVar(&vcc.username, "user", os.Getenv("VCUSER"), "The Url/address of a VMware vCenter server")
 	rootCmd.Flags().StringVar(&vcc.password, "password", os.Getenv("VCPASS"), "The Url/address of a VMware vCenter server")
 	rootCmd.Flags().BoolVar(&vcc.insecure, "insecure", boolVar, "The Url/address of a VMware vCenter server")
-	rootCmd.Flags().StringVar(&dcName, "datacenter", os.Getenv("VC_DATACENTER"), "The Datacenter Name")
 }
 
 func parseCredentials(vcc *vcCred) (*url.URL, error) {
 
 	// Check that an address was actually entered
 	if vcc.address == "" {
-		return nil, fmt.Errorf("No VMware vcCredenter URL/Address has been submitted")
+		return nil, fmt.Errorf("no VMware vcCredenter URL/Address has been submitted")
 	}
 
 	// Check that the URL can be parsed
 	u, err := url.Parse(vcc.address)
 	if err != nil {
-		return nil, fmt.Errorf("URL can't be parsed, ensure it is https://username:password/<address>/sdk")
+		return nil, fmt.Errorf("url can't be parsed, ensure it is https://username:password/<address>/sdk")
 	}
 
 	// Check if a username was entered
 	if vcc.username == "" {
 		// if no username does one exist as part of the url
 		if u.User.Username() == "" {
-			return nil, fmt.Errorf("No VMware vcCredenter Username has been submitted")
+			return nil, fmt.Errorf("no VMware vcCredenter Username has been submitted")
 		}
 	} else {
 		// A username was submitted update the url
@@ -103,7 +126,7 @@ func parseCredentials(vcc *vcCred) (*url.URL, error) {
 	if vcc.password == "" {
 		_, set := u.User.Password()
 		if !set {
-			return nil, fmt.Errorf("No VMware vcCredenter Password has been submitted")
+			return nil, fmt.Errorf("no VMware vcCredenter Password has been submitted")
 		}
 	} else {
 		u.User = url.UserPassword(u.User.Username(), vcc.password)
