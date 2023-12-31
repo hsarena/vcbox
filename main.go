@@ -2,9 +2,21 @@
 Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 */
 package main
+import (
+	"log"
+    "os"
 
-import "github.com/hsarena/vcbox/cmd"
+	"github.com/hsarena/vcbox/cmd"
+)
 
 func main() {
+	logFile, err := os.OpenFile("./vcbox.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+    if err != nil {
+		log.Fatal(err)
+    }
+    log.SetOutput(logFile)
+    log.SetFlags(log.LstdFlags | log.Lshortfile | log.Lmicroseconds)
+
+    log.Println("log file created")
 	cmd.Execute()
 }

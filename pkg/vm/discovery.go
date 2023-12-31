@@ -3,12 +3,36 @@ package vm
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/find"
 	"github.com/vmware/govmomi/object"
 	"github.com/vmware/govmomi/vim25/mo"
 )
+
+
+type VMInfo struct {
+	Name     string
+	Host     string
+	CPU      int32
+	Memory   int32
+	OS       string
+	IPs      string
+	Status   string
+}
+
+func Infos(vmo mo.VirtualMachine) *VMInfo {
+	
+	return &VMInfo{
+		Name:   vmo.Config.Name,
+		CPU:    vmo.Summary.Config.NumCpu,
+		Memory: vmo.Summary.Config.MemorySizeMB,
+		OS:     vmo.Guest.GuestFullName,
+		IPs:    vmo.Guest.IpAddress,
+		Status: string(vmo.Summary.Runtime.PowerState),
+	}
+}
 
 
 type DiscoveryService struct {
@@ -74,31 +98,8 @@ func (d *DiscoveryService) DiscoverVMInfo(vm *object.VirtualMachine) (*VMInfo, e
 	}
 
 	if err != nil { 
-		fmt.Printf("failed to discover VM Host info for %s: %v", vm.Name(), err)
+		log.Printf("failed to discover VM Host info for %s: %v", vm.Name(), err)
 	}
 
 	return Infos(vmMo), nil
-}
-
-
-func Infos(vmo mo.VirtualMachine) *VMInfo {
-	
-	return &VMInfo{
-		Name:   vmo.Config.Name,
-		CPU:    vmo.Summary.Config.NumCpu,
-		Memory: vmo.Summary.Config.MemorySizeMB,
-		OS:     vmo.Guest.GuestFullName,
-		IPs:    vmo.Guest.IpAddress,
-		Status: string(vmo.Summary.Runtime.PowerState),
-	}
-}
-
-type VMInfo struct {
-	Name     string
-	Host     string
-	CPU      int32
-	Memory   int32
-	OS       string
-	IPs      string
-	Status   string
 }
