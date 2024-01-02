@@ -21,7 +21,7 @@ type vcCred struct {
 }
 
 var (
-	vcc    vcCred
+	vcc vcCred
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -45,12 +45,13 @@ var rootCmd = &cobra.Command{
 		if err := vm.NewUI(c).Run(); err != nil {
 			panic(err)
 		}
-		// discovery := vm.NewDiscoveryService(c)
-		// dc, err:= discovery.DiscoverDatacenters()
-		// if err != nil {
-		// 	log.Printf("%s", err.Error())
-		// }
-		
+
+		discovery := vm.NewDiscoveryService(c)
+		dc, err := discovery.DiscoverDatacenters()
+		if err != nil {
+			log.Printf("%s", err.Error())
+		}
+
 		// for _ , d := range dc {
 		// 	hosts, err := discovery.DiscoverHosts(d)
 		// 	if err != nil {
@@ -73,10 +74,15 @@ var rootCmd = &cobra.Command{
 		// 		vmDetailsText := fmt.Sprintf("Name: %s\nHost: %s\nCPU: %d\nMemory: %d MB\nOS: %s\nIPs: %s\nStatus: %s",
 		// 			vmInfo.Name, vmInfo.Host, vmInfo.CPU, vmInfo.Memory, vmInfo.OS, vmInfo.IPs, vmInfo.Status)
 		// 		fmt.Println(vmDetailsText)
-			
+
 		// 	}
 		// }
+		cr, err := discovery.DiscoverComputeResource(dc[0])
+		if err != nil {
+			log.Printf("%s", err.Error())
+		}
 
+		log.Printf("Compute Resource: %s\n", cr)
 		defer c.Logout(ctx)
 	},
 }
