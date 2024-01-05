@@ -70,21 +70,31 @@ func (ui *UI) createUI() {
 	vmdList.SetText("")
 	ui.vmDetails = vmdList
 
-	ui.updateDatacentersList()
+	ui.initLists()
 	ui.setupEventHandlers()
-	ui.app.SetRoot(ui.flexLayout(), true).SetFocus(ui.datacenters).EnableMouse(true)
+	ui.app.SetRoot(ui.flexLayout(), true).SetFocus(ui.datacenters).EnableMouse(false)
 }
 
 func (ui *UI) flexLayout() *tview.Flex {
 	return tview.NewFlex().
-		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-			AddItem(ui.datacenters, 0, 1, true).
-			AddItem(ui.computeResources, 0, 1, true).
-			AddItem(ui.vms, 0, 4, true),
-			0, 1, true).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-			AddItem(ui.vmDetails, 0, 5, true),
-			0, 5, true)
+	AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+	AddItem(ui.datacenters, 0, 1, true).
+	AddItem(ui.computeResources, 0, 1, false).
+	AddItem(ui.vms, 0, 4, true),
+	0, 1, true).
+	AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+	AddItem(ui.vmDetails, 0, 5, false),
+	0, 5, true)
+}
+
+func (ui *UI) initLists() {
+	datacenters, err := ui.discovery.DiscoverDatacenters()
+	ui.updateDatacentersList()
+	if err != nil {
+		log.Printf("%s", err.Error())
+		return
+	}
+	ui.selectedDc = datacenters[0]
 }
 
 func (ui *UI) updateDatacentersList() {
@@ -173,67 +183,77 @@ func (ui *UI) setupEventHandlers() {
 		log.Printf("%s", err.Error())
 		return
 	}
-	ui.datacenters.SetSelectedFunc(func(i int, _ string, _ string, _ rune) {
-		if i < len(datacenters) {
-			ui.selectedDc = datacenters[i]
-			ui.updateComputeResourcesList(ui.selectedDc)
+
+	// Datacenter Events
+	ui.datacenters.SetFocusFunc(func() {
+		if (ui.selectedDc != nil) {
 			ui.updateVMsList(ui.selectedDc)
+			ui.updateComputeResourcesList(ui.selectedDc)
+		} else {
+			ui.initLists()
+			ui.updateVMsList(ui.selectedDc)
+			ui.updateComputeResourcesList(ui.selectedDc)
 		}
 	})
-	crs, err := ui.discovery.DiscoverComputeResource(ui.selectedDc)
-	if err != nil {
-		log.Printf("%s", err.Error())
-		return
-	}
-	ui.computeResources.SetSelectedFunc(func(i int, _ string, _ string, _ rune) {
-		if i < len(crs) {
-			ui.selectedCr = crs[i]
-		}
+
+	ui.datacenters.SetChangedFunc(func(i int, _ string, _ string, _ rune) {
+		ui.datacenters.SetSelectedTextColor(tcell.ColorDarkOrange)
+		ui.selectedDc = datacenters[i]
+		ui.updateComputeResourcesList(ui.selectedDc)
+		ui.updateVMsList(ui.selectedDc)
 	})
+	
+	ui.datacenters.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEscape:
+			ui.app.Stop()
+		case tcell.KeyEnter:
+			ui.app.SetFocus(ui.vms)
+		case tcell.KeyTab:
+			ui.app.SetFocus(ui.vms)
+		}
+		return event
+	})
+
 
 	vms, err := ui.discovery.DiscoverVMsInsideDC(ui.selectedDc)
 	if err != nil {
 		log.Printf("%s", err.Error())
 		return
 	}
-	ui.computeResources.SetSelectedFunc(func(i int, _ string, _ string, _ rune) {
-		if i < len(vms) {
-			ui.selectedVm = vms[i]
-			ui.updateVMInfo(ui.selectedVm)
-		}
+
+	ui.vms.SetChangedFunc(func(i int, _ string, _ string, _ rune) {
+		ui.vms.SetSelectedTextColor(tcell.ColorDarkGreen)
+		ui.selectedVm = vms[i]
+		ui.updateVMInfo(ui.selectedVm)
+	})
+	ui.vms.SetSelectedFunc(func(i int, _ string, _ string, _ rune) {
+		ui.vms.SetSelectedTextColor(tcell.ColorDarkGreen)
+		ui.selectedVm = vms[i]
+		ui.updateVMInfo(ui.selectedVm)
 	})
 
-	ui.datacenters.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	// ui.vms.SetSelectedFunc(func(i int, _ string, _ string, _ rune) {
+	// 	ui.vms.SetSelectedTextColor(tcell.ColorDarkGreen)
+	// 	ui.vmDetails.Clear()
+	// 	ui.selectedVm = vms[i]
+	// 	go func() {
+	// 		ui.updateVMInfo(ui.selectedVm)
+	// 	}()
+	// })
+	
+	ui.vms.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:
-			ui.app.Stop()
-		}
-		return event
-	})
-
-	ui.computeResources.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyEscape:
+			ui.app.SetFocus(ui.datacenters)
+		case tcell.KeyEnter:
+			ui.app.SetFocus(ui.vms)
+		case tcell.KeyTab:
 			ui.app.SetFocus(ui.datacenters)
 		}
 		return event
 	})
 
-	ui.vms.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyEscape:
-			ui.app.SetFocus(ui.computeResources)
-		}
-		return event
-	})
-
-	ui.vmDetails.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyEscape:
-			ui.app.SetFocus(ui.vms)
-		}
-		return event
-	})
 }
 
 func (ui *UI) Run() error {
