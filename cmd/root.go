@@ -8,9 +8,10 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/hsarena/vcbox/pkg/vm"
 	"github.com/spf13/cobra"
 	"github.com/vmware/govmomi"
+
+	i "github.com/hsarena/vcbox/internal"
 )
 
 type vcCred struct {
@@ -42,41 +43,16 @@ var rootCmd = &cobra.Command{
 			log.Printf("%s", err.Error())
 		}
 
-		if err := vm.NewUI(c).Run(); err != nil {
+		if err := i.NewUI(c).Run(); err != nil {
 			panic(err)
 		}
 
-		discovery := vm.NewDiscoveryService(c)
+		discovery := i.NewDiscoveryService(c)
 		dc, err := discovery.DiscoverDatacenters()
 		if err != nil {
 			log.Printf("%s", err.Error())
 		}
 
-		// for _ , d := range dc {
-		// 	hosts, err := discovery.DiscoverHosts(d)
-		// 	if err != nil {
-		// 		log.Printf("%s", err.Error())
-		// 	}
-		// 	for _, h := range hosts {
-		// 		log.Printf("host: %s",h.Name())
-		// 	}
-		// 	vm, err := discovery.DiscoverVMsInsideDC(d)
-		// 	if err != nil {
-		// 		log.Printf("%s", err.Error())
-		// 	}
-		// 	for _, v := range vm {
-		// 		fmt.Println(v.Name())
-		// 		vmInfo, err := discovery.DiscoverVMInfo(v)
-		// 		if err != nil {
-		// 			// Handle the error
-		// 			return
-		// 		}
-		// 		vmDetailsText := fmt.Sprintf("Name: %s\nHost: %s\nCPU: %d\nMemory: %d MB\nOS: %s\nIPs: %s\nStatus: %s",
-		// 			vmInfo.Name, vmInfo.Host, vmInfo.CPU, vmInfo.Memory, vmInfo.OS, vmInfo.IPs, vmInfo.Status)
-		// 		fmt.Println(vmDetailsText)
-
-		// 	}
-		// }
 		cr, err := discovery.DiscoverComputeResource(dc[0])
 		if err != nil {
 			log.Printf("%s", err.Error())
@@ -88,7 +64,7 @@ var rootCmd = &cobra.Command{
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
+// This is called by mai.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {

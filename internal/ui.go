@@ -1,10 +1,9 @@
-package vm
+package internal
 
 import (
 	"fmt"
 	"log"
 
-	//"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/vmware/govmomi"
@@ -77,14 +76,14 @@ func (ui *UI) createUI() {
 
 func (ui *UI) flexLayout() *tview.Flex {
 	return tview.NewFlex().
-	AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-	AddItem(ui.datacenters, 0, 1, true).
-	AddItem(ui.computeResources, 0, 1, false).
-	AddItem(ui.vms, 0, 4, true),
-	0, 1, true).
-	AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-	AddItem(ui.vmDetails, 0, 5, false),
-	0, 5, true)
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(ui.datacenters, 0, 1, true).
+			AddItem(ui.computeResources, 0, 1, false).
+			AddItem(ui.vms, 0, 4, true),
+			0, 1, true).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(ui.vmDetails, 0, 5, false),
+			0, 5, true)
 }
 
 func (ui *UI) initLists() {
@@ -153,7 +152,6 @@ func (ui *UI) updateVMsList(dc *object.Datacenter) {
 		ui.vms.AddItem(vm.Name(), "", 0, nil)
 	}
 
-	//ui.app.Draw()
 }
 
 func (ui *UI) updateVMInfo(vm *object.VirtualMachine) {
@@ -186,7 +184,7 @@ func (ui *UI) setupEventHandlers() {
 
 	// Datacenter Events
 	ui.datacenters.SetFocusFunc(func() {
-		if (ui.selectedDc != nil) {
+		if ui.selectedDc != nil {
 			ui.updateVMsList(ui.selectedDc)
 			ui.updateComputeResourcesList(ui.selectedDc)
 		} else {
@@ -202,7 +200,7 @@ func (ui *UI) setupEventHandlers() {
 		ui.updateComputeResourcesList(ui.selectedDc)
 		ui.updateVMsList(ui.selectedDc)
 	})
-	
+
 	ui.datacenters.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:
@@ -214,7 +212,6 @@ func (ui *UI) setupEventHandlers() {
 		}
 		return event
 	})
-
 
 	vms, err := ui.discovery.DiscoverVMsInsideDC(ui.selectedDc)
 	if err != nil {
@@ -233,15 +230,6 @@ func (ui *UI) setupEventHandlers() {
 		ui.updateVMInfo(ui.selectedVm)
 	})
 
-	// ui.vms.SetSelectedFunc(func(i int, _ string, _ string, _ rune) {
-	// 	ui.vms.SetSelectedTextColor(tcell.ColorDarkGreen)
-	// 	ui.vmDetails.Clear()
-	// 	ui.selectedVm = vms[i]
-	// 	go func() {
-	// 		ui.updateVMInfo(ui.selectedVm)
-	// 	}()
-	// })
-	
 	ui.vms.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:
