@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/url"
 	"os"
 	"strconv"
@@ -10,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/vmware/govmomi"
 
-	"github.com/hsarena/vcbox/pkg/box"
+	i "github.com/hsarena/vcbox/internal"
 )
 
 type vcCred struct {
@@ -21,8 +22,7 @@ type vcCred struct {
 }
 
 var (
-	dcName string
-	vcc    vcCred
+	vcc vcCred
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -32,7 +32,7 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		u, err := parseCredentials(&vcc)
 		if err != nil {
-			fmt.Printf("%s", err.Error())
+			log.Printf("%s", err.Error())
 		}
 
 		ctx, cancel := context.WithCancel(context.Background())
@@ -40,20 +40,31 @@ var rootCmd = &cobra.Command{
 
 		c, err := govmomi.NewClient(ctx, u, vcc.insecure)
 		if err != nil {
-			fmt.Printf("%s", err.Error())
+			log.Printf("%s", err.Error())
 		}
 
-		defer c.Logout(ctx)
-		v, err := box.DiscoverDCVMMap(c)
-		if err != nil {
-			fmt.Printf("%s", err.Error())
+		if err := i.NewUI(c).Run(); err != nil {
+			panic(err)
 		}
-		box.NewNewUi(v)
+
+		discovery := i.NewDiscoveryService(c)
+		dc, err := discovery.DiscoverDatacenters()
+		if err != nil {
+			log.Printf("%s", err.Error())
+		}
+
+		cr, err := discovery.DiscoverComputeResource(dc[0])
+		if err != nil {
+			log.Printf("%s", err.Error())
+		}
+
+		log.Printf("Compute Resource: %s\n", cr)
+		defer c.Logout(ctx)
 	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
+// This is called by mai.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -73,27 +84,26 @@ func init() {
 	rootCmd.Flags().StringVar(&vcc.username, "user", os.Getenv("VCUSER"), "The Url/address of a VMware vCenter server")
 	rootCmd.Flags().StringVar(&vcc.password, "password", os.Getenv("VCPASS"), "The Url/address of a VMware vCenter server")
 	rootCmd.Flags().BoolVar(&vcc.insecure, "insecure", boolVar, "The Url/address of a VMware vCenter server")
-	rootCmd.Flags().StringVar(&dcName, "datacenter", os.Getenv("VC_DATACENTER"), "The Datacenter Name")
 }
 
 func parseCredentials(vcc *vcCred) (*url.URL, error) {
 
 	// Check that an address was actually entered
 	if vcc.address == "" {
-		return nil, fmt.Errorf("No VMware vcCredenter URL/Address has been submitted")
+		return nil, fmt.Errorf("no VMware vcCredenter URL/Address has been submitted")
 	}
 
 	// Check that the URL can be parsed
 	u, err := url.Parse(vcc.address)
 	if err != nil {
-		return nil, fmt.Errorf("URL can't be parsed, ensure it is https://username:password/<address>/sdk")
+		return nil, fmt.Errorf("url can't be parsed, ensure it is https://username:password/<address>/sdk")
 	}
 
 	// Check if a username was entered
 	if vcc.username == "" {
 		// if no username does one exist as part of the url
 		if u.User.Username() == "" {
-			return nil, fmt.Errorf("No VMware vcCredenter Username has been submitted")
+			return nil, fmt.Errorf("no VMware vcCredenter Username has been submitted")
 		}
 	} else {
 		// A username was submitted update the url
@@ -103,7 +113,7 @@ func parseCredentials(vcc *vcCred) (*url.URL, error) {
 	if vcc.password == "" {
 		_, set := u.User.Password()
 		if !set {
-			return nil, fmt.Errorf("No VMware vcCredenter Password has been submitted")
+			return nil, fmt.Errorf("no VMware vcCredenter Password has been submitted")
 		}
 	} else {
 		u.User = url.UserPassword(u.User.Username(), vcc.password)
