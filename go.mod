@@ -6,6 +6,7 @@ require (
 	github.com/gdamore/tcell/v2 v2.6.1-0.20231203215052-2917c3801e73
 	github.com/spf13/cobra v1.8.0
 	github.com/vmware/govmomi v0.34.1
+	golang.org/x/crypto v0.6.0
 )
 
 require (

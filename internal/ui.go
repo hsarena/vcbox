@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/hsarena/vcbox/pkg/ssh"
 	"github.com/rivo/tview"
 	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/object"
@@ -152,6 +153,7 @@ func (ui *UI) updateVMsList(dc *object.Datacenter) {
 		ui.vms.AddItem(vm.Name(), "", 0, nil)
 	}
 
+
 }
 
 func (ui *UI) updateVMInfo(vm *object.VirtualMachine) {
@@ -225,9 +227,17 @@ func (ui *UI) setupEventHandlers() {
 		ui.updateVMInfo(ui.selectedVm)
 	})
 	ui.vms.SetSelectedFunc(func(i int, _ string, _ string, _ rune) {
-		ui.vms.SetSelectedTextColor(tcell.ColorDarkGreen)
-		ui.selectedVm = vms[i]
-		ui.updateVMInfo(ui.selectedVm)
+		// ui.vms.SetSelectedTextColor(tcell.ColorDarkGreen)
+		// ui.selectedVm = vms[i]
+		// ui.updateVMInfo(ui.selectedVm)
+
+		vmInfo, err := ui.discovery.DiscoverVMInfo(ui.selectedVm)
+		if err != nil {
+			log.Printf("%s", err.Error())
+			return
+		}
+		ui.app.Stop()
+		ssh.SSHConnect("root", vmInfo.IPs, 22, true)
 	})
 
 	ui.vms.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
