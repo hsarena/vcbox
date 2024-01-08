@@ -119,3 +119,4 @@ func (d *DiscoveryService) DiscoverVMInfo(vm *object.VirtualMachine) (*VMInfo, e
 
 	return Infos(vmMo), nil
 }
+

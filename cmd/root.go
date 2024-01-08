@@ -11,7 +11,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/vmware/govmomi"
 
+	
 	i "github.com/hsarena/vcbox/internal"
+
 )
 
 type vcCred struct {
@@ -47,18 +49,6 @@ var rootCmd = &cobra.Command{
 			panic(err)
 		}
 
-		discovery := i.NewDiscoveryService(c)
-		dc, err := discovery.DiscoverDatacenters()
-		if err != nil {
-			log.Printf("%s", err.Error())
-		}
-
-		cr, err := discovery.DiscoverComputeResource(dc[0])
-		if err != nil {
-			log.Printf("%s", err.Error())
-		}
-
-		log.Printf("Compute Resource: %s\n", cr)
 		defer c.Logout(ctx)
 	},
 }

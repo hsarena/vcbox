@@ -10,7 +10,7 @@ import (
 	"golang.org/x/crypto/ssh/agent"
 )
 
-func sshConnect() {
+func SSHConnect(user string, ip string, port int, ignoreHostKey bool) {
 
 	// Connect to the SSH agent
 	sshAgent, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK"))
@@ -22,7 +22,7 @@ func sshConnect() {
 
 	// Create an SSH client configuration
 	config := &ssh.ClientConfig{
-		User: "root",
+		User: user,
 		Auth: []ssh.AuthMethod{
 			// Use the signer from the private key
 			ssh.PublicKeysCallback(agent.NewClient(sshAgent).Signers),
@@ -37,8 +37,8 @@ func sshConnect() {
 	// 	},
 	// 	HostKeyCallback: hostKeyCallback,
 	// }
-
-	client, err := ssh.Dial("tcp", "193.151.136.204:22", config)
+	addr := fmt.Sprintf("%s:%v", ip, port)
+	client, err := ssh.Dial("tcp", addr, config)
 	if err != nil {
 		log.Fatal("Failed to dial: ", err)
 	}
