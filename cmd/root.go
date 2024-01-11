@@ -11,9 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/vmware/govmomi"
 
-	
 	i "github.com/hsarena/vcbox/internal"
-
 )
 
 type vcCred struct {

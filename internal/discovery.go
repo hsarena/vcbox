@@ -17,7 +17,7 @@ type VMInfo struct {
 	CPU    int32
 	Memory int32
 	OS     string
-	IP    string
+	IP     string
 	Status string
 }
 
@@ -28,7 +28,7 @@ func Infos(vmo mo.VirtualMachine) *VMInfo {
 		CPU:    vmo.Summary.Config.NumCpu,
 		Memory: vmo.Summary.Config.MemorySizeMB,
 		OS:     vmo.Guest.GuestFullName,
-		IP:    vmo.Guest.IpAddress,
+		IP:     vmo.Guest.IpAddress,
 		Status: string(vmo.Summary.Runtime.PowerState),
 	}
 }
@@ -119,4 +119,3 @@ func (d *DiscoveryService) DiscoverVMInfo(vm *object.VirtualMachine) (*VMInfo, e
 
 	return Infos(vmMo), nil
 }
-
