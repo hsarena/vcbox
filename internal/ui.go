@@ -8,35 +8,18 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/vmware/govmomi"
-	"github.com/vmware/govmomi/object"
 )
 
 type UI struct {
-	app         *tview.Application
-	dcsList     *tview.List
-	crsList     *tview.List
-	vmsList     *tview.List
-	tabPage     *tab
-	selectedDc  int
-	selectedCr  int
-	selectedVm  int
-	dcInventory []dcInventory
-}
-
-type dcInventory struct {
-	datacenter       *object.Datacenter
-	computeResources []*object.ComputeResource
-	virtualMachines  []vmInventory
-	hostLog          *object.DiagnosticLog
-}
-
-type vmInventory struct {
-	name   string
-	cpu    int32
-	memory int32
-	os     string
-	ip     string
-	status string
+	app            *tview.Application
+	datacenterList *tview.List
+	hostList       *tview.List
+	vmList         *tview.List
+	tabPage        *tab
+	selectedDc     int
+	selectedHost   int
+	selectedVm     int
+	dcInventory    []dcInventory
 }
 
 type tab struct {
@@ -52,14 +35,14 @@ func NewUI(client *govmomi.Client) *UI {
 	app := tview.NewApplication()
 
 	ui := &UI{
-		app:        app,
-		dcsList:    nil,
-		crsList:    nil,
-		vmsList:    nil,
-		selectedDc: 0,
-		selectedCr: 0,
-		selectedVm: 0,
-		tabPage:    nil,
+		app:            app,
+		datacenterList: nil,
+		hostList:       nil,
+		vmList:         nil,
+		selectedDc:     0,
+		selectedHost:   0,
+		selectedVm:     0,
+		tabPage:        nil,
 	}
 
 	ui.initMap(client)
@@ -70,49 +53,53 @@ func NewUI(client *govmomi.Client) *UI {
 
 func (ui *UI) initMap(client *govmomi.Client) {
 	d := NewDiscoveryService(client)
-	dcs, err := d.DiscoverDatacenters()
+	dcD, err := d.DiscoverDatacenters()
 	if err != nil {
 		log.Printf("%s", err.Error())
 		return
 	}
-	dcI := make([]dcInventory, len(dcs))
-	for i, dc := range dcs {
+	dcI := make([]dcInventory, len(dcD))
+	for i, dc := range dcD {
 		dcI[i].datacenter = dc
-		crs, err := d.DiscoverComputeResource(dc)
+		crD, err := d.DiscoverComputeResource(dc)
 		if err != nil {
 			log.Printf("%s", err.Error())
 			return
 		}
-		dcI[i].computeResources = crs
-		dcI[i].hostLog, err = d.FetchHostLogs(dcI[i].computeResources[0])
-		if err != nil {
-			log.Printf("%s", err.Error())
-			return
+		hostI := make([]hostInventory, len(crD))
+		for i, c := range crD {
+			hostI[i].computeResource = c
+			hostI[i].log, err = d.FetchHostLogs(c)
+			if err != nil {
+				log.Printf("%s", err.Error())
+				return
+			}
 		}
 		vms, err := d.DiscoverVMsInsideDC(dc)
 		if err != nil {
 			log.Printf("%s", err.Error())
 			return
 		}
-		vm := make([]vmInventory, len(vms))
-		for j, v := range vms {
+		vmI := make([]vmInventory, len(vms))
+		for i, v := range vms {
 			vmInfo, err := d.DiscoverVMInfo(v)
 			if err != nil {
 				log.Printf("%s", err.Error())
 				return
 			}
-			vm[j].name = vmInfo.Name
-			vm[j].cpu = vmInfo.CPU
-			vm[j].memory = vmInfo.Memory
-			vm[j].os = vmInfo.OS
-			vm[j].ip = vmInfo.IP
-			vm[j].status = vmInfo.Status
+			vmI[i].name = vmInfo.Name
+			vmI[i].cpu = vmInfo.CPU
+			vmI[i].memory = vmInfo.Memory
+			vmI[i].os = vmInfo.OS
+			vmI[i].ip = vmInfo.IP
+			vmI[i].status = vmInfo.Status
 		}
-		dcI[i].virtualMachines = vm
+		dcI[i].hosts = hostI
+		dcI[i].vms = vmI
 	}
 	ui.dcInventory = dcI
 	ui.selectedDc = 0
-	ui.selectedCr = 0
+	ui.selectedHost = 0
 }
 
 func (ui *UI) initSide() {
@@ -120,19 +107,19 @@ func (ui *UI) initSide() {
 	dList.SetBorder(true).SetBackgroundColor(tcell.ColorDefault).
 		SetTitle(" Datacenters ")
 	dList.AddItem("", "", 0, nil)
-	ui.dcsList = dList
+	ui.datacenterList = dList
 
-	crsList := tview.NewList().ShowSecondaryText(false)
-	crsList.SetBorder(true).SetBackgroundColor(tcell.ColorDefault).
+	hostList := tview.NewList().ShowSecondaryText(false)
+	hostList.SetBorder(true).SetBackgroundColor(tcell.ColorDefault).
 		SetTitle(" Compute Resources ")
-	crsList.AddItem("", "", 0, nil)
-	ui.crsList = crsList
+	hostList.AddItem("", "", 0, nil)
+	ui.hostList = hostList
 
 	vList := tview.NewList().ShowSecondaryText(false)
 	vList.SetBorder(true).SetBackgroundColor(tcell.ColorDefault).
 		SetTitle(" Virtual Machines ")
 	vList.AddItem("", "", 0, nil)
-	ui.vmsList = vList
+	ui.vmList = vList
 
 }
 
@@ -193,7 +180,8 @@ func (ui *UI) createUI() {
 	ui.initSide()
 	ui.updateDatacenterList()
 	ui.setupEventHandlers()
-	ui.app.SetRoot(ui.flexLayout(), true).SetFocus(ui.dcsList).EnableMouse(false)
+	ui.setupTabEventHandlers()
+	ui.app.SetRoot(ui.flexLayout(), true).SetFocus(ui.datacenterList).EnableMouse(false)
 }
 
 func (ui *UI) flexLayout() *tview.Flex {
@@ -204,9 +192,9 @@ func (ui *UI) flexLayout() *tview.Flex {
 		AddItem(ui.tabPage.logs, 0, 10, false)
 
 	sidePage := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(ui.dcsList, 0, 1, true).
-		AddItem(ui.crsList, 0, 1, true).
-		AddItem(ui.vmsList, 0, 4, true)
+		AddItem(ui.datacenterList, 0, 1, true).
+		AddItem(ui.hostList, 0, 1, true).
+		AddItem(ui.vmList, 0, 4, true)
 	return tview.NewFlex().
 		AddItem(sidePage, 0, 1, true).
 		AddItem(tabPage, 0, 5, true)
@@ -214,27 +202,27 @@ func (ui *UI) flexLayout() *tview.Flex {
 
 func (ui *UI) updateDatacenterList() {
 
-	ui.dcsList.Clear()
+	ui.datacenterList.Clear()
 
 	for _, d := range ui.dcInventory {
-		ui.dcsList.AddItem(d.datacenter.Name(), "", 0, nil)
+		ui.datacenterList.AddItem(d.datacenter.Name(), "", 0, nil)
 	}
 }
 
 func (ui *UI) updateComputeResourceList() {
-	ui.crsList.Clear()
+	ui.hostList.Clear()
 
-	for _, cr := range ui.dcInventory[ui.selectedDc].computeResources {
-		ui.crsList.AddItem(cr.Name(), "", 0, nil)
+	for _, cr := range ui.dcInventory[ui.selectedDc].hosts {
+		ui.hostList.AddItem(cr.computeResource.Name(), "", 0, nil)
 	}
 
 }
 
-func (ui *UI) updateVMsList() {
-	ui.vmsList.Clear()
+func (ui *UI) updateVMList() {
+	ui.vmList.Clear()
 
-	for _, vm := range ui.dcInventory[ui.selectedDc].virtualMachines {
-		ui.vmsList.AddItem(vm.name, "", 0, nil)
+	for _, vm := range ui.dcInventory[ui.selectedDc].vms {
+		ui.vmList.AddItem(vm.name, "", 0, nil)
 	}
 
 }
@@ -243,101 +231,114 @@ func (ui *UI) updateVMInfo() {
 	ui.tabPage.infos.Clear()
 
 	vmDetailsText := fmt.Sprintf("[orange]Name: [white]%s\n[orange]CPU: [white]%d\n[orange]Memory: [white]%d MB\n[orange]OS: [white]%s\n[orange]IP: [white]%s\n[orange]Status: [white]%s",
-		ui.dcInventory[ui.selectedDc].virtualMachines[ui.selectedVm].name,
-		ui.dcInventory[ui.selectedDc].virtualMachines[ui.selectedVm].cpu,
-		ui.dcInventory[ui.selectedDc].virtualMachines[ui.selectedVm].memory,
-		ui.dcInventory[ui.selectedDc].virtualMachines[ui.selectedVm].os,
-		ui.dcInventory[ui.selectedDc].virtualMachines[ui.selectedVm].ip,
-		ui.dcInventory[ui.selectedDc].virtualMachines[ui.selectedVm].status)
+		ui.dcInventory[ui.selectedDc].vms[ui.selectedVm].name,
+		ui.dcInventory[ui.selectedDc].vms[ui.selectedVm].cpu,
+		ui.dcInventory[ui.selectedDc].vms[ui.selectedVm].memory,
+		ui.dcInventory[ui.selectedDc].vms[ui.selectedVm].os,
+		ui.dcInventory[ui.selectedDc].vms[ui.selectedVm].ip,
+		ui.dcInventory[ui.selectedDc].vms[ui.selectedVm].status)
 
 	ui.tabPage.infos.SetText(vmDetailsText).SetDynamicColors(true)
 }
 
 func (ui *UI) updateHostLog() {
+	ui.tabPage.logs.Clear()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	err := ui.dcInventory[ui.selectedDc].hostLog.Seek(ctx, nLines)
+	err := ui.dcInventory[ui.selectedDc].hosts[ui.selectedHost].log.Seek(ctx, nLines)
 	if err != nil {
 		log.Printf("%s", err.Error())
 		return
 	}
-	ui.dcInventory[ui.selectedDc].hostLog.Copy(ctx, ui.tabPage.logs)
+	ui.dcInventory[ui.selectedDc].hosts[ui.selectedHost].log.Copy(ctx, ui.tabPage.logs)
 }
 
 func (ui *UI) setupEventHandlers() {
 
 	// Datacenter Events
-	ui.dcsList.SetFocusFunc(func() {
-		ui.updateVMsList()
+	ui.datacenterList.SetFocusFunc(func() {
+		ui.updateVMList()
 		ui.updateComputeResourceList()
 	})
 
-	ui.dcsList.SetChangedFunc(func(i int, _ string, _ string, _ rune) {
-		ui.dcsList.SetSelectedTextColor(tcell.ColorDarkOrange)
+	ui.datacenterList.SetChangedFunc(func(i int, _ string, _ string, _ rune) {
+		ui.datacenterList.SetSelectedTextColor(tcell.ColorDarkOrange)
 		ui.selectedDc = i
 		ui.updateComputeResourceList()
-		ui.updateVMsList()
+		ui.updateVMList()
 	})
 
-	ui.dcsList.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	ui.datacenterList.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:
 			ui.app.Stop()
 		case tcell.KeyEnter:
-			ui.app.SetFocus(ui.vmsList)
+			ui.app.SetFocus(ui.vmList)
 		case tcell.KeyTab:
-			ui.app.SetFocus(ui.crsList)
+			ui.app.SetFocus(ui.hostList)
 		}
 		return event
 	})
 
 	//Compute Resource Events
-	ui.crsList.SetChangedFunc(func(i int, _ string, _ string, _ rune) {
-		ui.crsList.SetSelectedTextColor(tcell.ColorDarkOrange)
+	ui.hostList.SetChangedFunc(func(i int, _ string, _ string, _ rune) {
+		ui.hostList.SetSelectedTextColor(tcell.ColorDarkOrange)
 	})
 
-	ui.crsList.SetSelectedFunc(func(i int, _ string, _ string, _ rune) {
-		ui.crsList.SetSelectedTextColor(tcell.ColorDarkOrange)
-		ui.selectedCr = i
+	ui.hostList.SetSelectedFunc(func(i int, _ string, _ string, _ rune) {
+		ui.hostList.SetSelectedTextColor(tcell.ColorDarkOrange)
+		ui.selectedHost = i
 		log.Println("about to update host log")
 		ui.updateHostLog()
 		ui.app.SetFocus(ui.tabPage.logs)
 	})
 
-	ui.crsList.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	ui.hostList.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:
-			ui.app.SetFocus(ui.dcsList)
+			ui.app.SetFocus(ui.datacenterList)
 		case tcell.KeyEnter:
-			ui.app.SetFocus(ui.crsList)
+			ui.app.SetFocus(ui.hostList)
 		case tcell.KeyTab:
-			ui.app.SetFocus(ui.vmsList)
+			ui.app.SetFocus(ui.vmList)
 		}
 		return event
 	})
 
-	ui.vmsList.SetChangedFunc(func(i int, _ string, _ string, _ rune) {
-		ui.vmsList.SetSelectedTextColor(tcell.ColorDarkGreen)
+	ui.vmList.SetChangedFunc(func(i int, _ string, _ string, _ rune) {
+		ui.vmList.SetSelectedTextColor(tcell.ColorDarkGreen)
 	})
-	ui.vmsList.SetSelectedFunc(func(i int, _ string, _ string, _ rune) {
-		ui.vmsList.SetSelectedTextColor(tcell.ColorDarkGreen)
+	ui.vmList.SetSelectedFunc(func(i int, _ string, _ string, _ rune) {
+		ui.vmList.SetSelectedTextColor(tcell.ColorDarkGreen)
 		ui.selectedVm = i
 		ui.updateVMInfo()
 		ui.app.SetFocus(ui.tabPage.infos)
 
 	})
 
-	ui.vmsList.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	ui.vmList.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:
-			ui.app.SetFocus(ui.dcsList)
+			ui.app.SetFocus(ui.datacenterList)
 		case tcell.KeyEnter:
-			ui.app.SetFocus(ui.vmsList)
+			ui.app.SetFocus(ui.vmList)
 		case tcell.KeyTab:
-			ui.app.SetFocus(ui.dcsList)
+			ui.app.SetFocus(ui.datacenterList)
 		}
 		return event
 	})
+}
+
+func (ui *UI) setupTabEventHandlers() {
+
+	ui.tabPage.logs.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEscape:
+			ui.app.SetFocus(ui.hostList)
+		}
+		return event
+	})
+
 }
 
 func (ui *UI) Run() error {
