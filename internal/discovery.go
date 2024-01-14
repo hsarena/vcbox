@@ -21,6 +21,11 @@ type VMInfo struct {
 	Status string
 }
 
+const (
+	nLines        int32 = 100
+	defalutLogKey       = "vmkernel"
+)
+
 func Infos(vmo mo.VirtualMachine) *VMInfo {
 
 	return &VMInfo{
@@ -118,4 +123,17 @@ func (d *DiscoveryService) DiscoverVMInfo(vm *object.VirtualMachine) (*VMInfo, e
 	}
 
 	return Infos(vmMo), nil
+}
+
+func (d *DiscoveryService) FetchHostLogs(cr *object.ComputeResource) (*object.DiagnosticLog, error) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	hosts, err := cr.Hosts(ctx)
+	log.Println(hosts)
+	if err != nil {
+		log.Printf("%s", err.Error())
+		return nil, err
+	}
+	dLogM := object.NewDiagnosticManager(d.client.Client)
+	return dLogM.Log(ctx, hosts[0], defalutLogKey), nil
 }
