@@ -97,7 +97,6 @@ func (d *DiscoveryService) FetchHostLogs(cr *object.ComputeResource) (*object.Di
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	hosts, err := cr.Hosts(ctx)
-	log.Println(hosts)
 	if err != nil {
 		log.Printf("%s", err.Error())
 		return nil, err

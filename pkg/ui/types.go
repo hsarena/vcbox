@@ -7,30 +7,22 @@ import (
 
 type UI struct {
 	app          *tview.Application
-	page         *page
+	tab          *tab
 	side         *side
 	selectedDc   int
 	selectedHost int
 	selectedVm   int
+	selectedTab  int
 	inventory    []vmware.Inventory
 }
 
-type page struct {
-	navbar *navbar
-	tab    *tab
-}
-
 type tab struct {
-	infos       *tview.TextView
-	logs        *tview.TextView
-	events      *tview.TextView
-	monitoring  *tview.Flex
-	remote      *tview.Flex
-	selectedTab int
-}
-
-type navbar struct {
-	bar *tview.Flex
+	self       *tview.Flex
+	infos      *tview.TextView
+	logs       *tview.TextView
+	events     *tview.TextView
+	monitoring *tview.Flex
+	remote     *tview.Flex
 }
 
 type side struct {
