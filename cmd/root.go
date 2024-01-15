@@ -11,9 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/vmware/govmomi"
 
-	
-	i "github.com/hsarena/vcbox/internal"
-
+	"github.com/hsarena/vcbox/pkg/ui"
 )
 
 type vcCred struct {
@@ -45,7 +43,7 @@ var rootCmd = &cobra.Command{
 			log.Printf("%s", err.Error())
 		}
 
-		if err := i.NewUI(c).Run(); err != nil {
+		if err := ui.NewUI(c).Run(); err != nil {
 			panic(err)
 		}
 

@@ -1,45 +1,18 @@
-package internal
+package vmware
 
 import (
 	"context"
 	"fmt"
 	"log"
 
-	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/find"
 	"github.com/vmware/govmomi/object"
 	"github.com/vmware/govmomi/vim25/mo"
 )
 
-type VMInfo struct {
-	Name   string
-	Host   string
-	CPU    int32
-	Memory int32
-	OS     string
-	IP    string
-	Status string
-}
-
-func Infos(vmo mo.VirtualMachine) *VMInfo {
-
-	return &VMInfo{
-		Name:   vmo.Config.Name,
-		CPU:    vmo.Summary.Config.NumCpu,
-		Memory: vmo.Summary.Config.MemorySizeMB,
-		OS:     vmo.Guest.GuestFullName,
-		IP:    vmo.Guest.IpAddress,
-		Status: string(vmo.Summary.Runtime.PowerState),
-	}
-}
-
-type DiscoveryService struct {
-	client *govmomi.Client
-}
-
-func NewDiscoveryService(client *govmomi.Client) *DiscoveryService {
-	return &DiscoveryService{client: client}
-}
+const (
+	defalutLogKey = "vmkernel"
+)
 
 // DiscoverDatacenters retrieves a list of datacenters.
 func (d *DiscoveryService) DiscoverDatacenters() ([]*object.Datacenter, error) {
@@ -102,7 +75,7 @@ func (d *DiscoveryService) DiscoverVMsInsideHost(dc *object.Datacenter, h *objec
 }
 
 // DiscoverVMInfo retrieves details of a VM.
-func (d *DiscoveryService) DiscoverVMInfo(vm *object.VirtualMachine) (*VMInfo, error) {
+func (d *DiscoveryService) DiscoverVMInventory(vm *object.VirtualMachine) (*VMInventory, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -117,6 +90,60 @@ func (d *DiscoveryService) DiscoverVMInfo(vm *object.VirtualMachine) (*VMInfo, e
 		log.Printf("failed to discover VM Host info for %s: %v", vm.Name(), err)
 	}
 
-	return Infos(vmMo), nil
+	return NewVMInventory(vmMo), nil
 }
 
+func (d *DiscoveryService) FetchHostLogs(cr *object.ComputeResource) (*object.DiagnosticLog, error) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	hosts, err := cr.Hosts(ctx)
+	if err != nil {
+		log.Printf("%s", err.Error())
+		return nil, err
+	}
+	dLogM := object.NewDiagnosticManager(d.client.Client)
+	return dLogM.Log(ctx, hosts[0], defalutLogKey), nil
+}
+
+func (d *DiscoveryService) FetchInventory() ([]Inventory, error) {
+	dcD, err := d.DiscoverDatacenters()
+	if err != nil {
+		log.Printf("%s", err.Error())
+		return nil, err
+	}
+	in := make([]Inventory, len(dcD))
+	for i, dc := range dcD {
+		in[i].Datacenter = dc
+		crD, err := d.DiscoverComputeResource(dc)
+		if err != nil {
+			log.Printf("%s", err.Error())
+			return nil, err
+		}
+		hostI := make([]HostInventory, len(crD))
+		for i, c := range crD {
+			hostI[i].ComputeResource = c
+			hostI[i].Log, err = d.FetchHostLogs(c)
+			if err != nil {
+				log.Printf("%s", err.Error())
+				return nil, err
+			}
+		}
+		vms, err := d.DiscoverVMsInsideDC(dc)
+		if err != nil {
+			log.Printf("%s", err.Error())
+			return nil, err
+		}
+		vmI := make([]VMInventory, len(vms))
+		for i, v := range vms {
+			vm, err := d.DiscoverVMInventory(v)
+			if err != nil {
+				log.Printf("%s", err.Error())
+				return nil, err
+			}
+			vmI[i] = *vm
+		}
+		in[i].Hosts = hostI
+		in[i].VMs = vmI
+	}
+	return in, nil
+}

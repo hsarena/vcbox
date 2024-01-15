@@ -18,6 +18,6 @@ func main() {
 	log.SetOutput(logFile)
 	log.SetFlags(log.LstdFlags | log.Lshortfile | log.Lmicroseconds)
 
-	log.Println("log file created")
+	log.Println("VCBOX Started")
 	cmd.Execute()
 }
