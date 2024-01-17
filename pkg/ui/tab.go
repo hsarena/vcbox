@@ -36,9 +36,9 @@ func (t *tab) initTab() {
 	events.SetBackgroundColor(tcell.ColorDefault)
 	logs := tview.NewTextView().SetText("This is log tab")
 	logs.SetBackgroundColor(tcell.ColorDefault)
-	monitoring := tview.NewFlex().AddItem(tview.NewTextView().SetText(""), 0, 1, false)
+	monitoring := tview.NewTextView().SetText("This is monitoring tab")
 	monitoring.SetBackgroundColor(tcell.ColorDefault)
-	remote := tview.NewFlex().AddItem(tview.NewTextView().SetText(""), 0, 1, false)
+	remote := tview.NewTextView().SetText("This is remote tab")
 	remote.SetBackgroundColor(tcell.ColorDefault)
 	t.self = tab
 	t.infos = infos

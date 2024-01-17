@@ -2,6 +2,7 @@ package ssh
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -10,7 +11,7 @@ import (
 	"golang.org/x/crypto/ssh/agent"
 )
 
-func SSHConnect(user string, ip string, port int, ignoreHostKey bool) {
+func SSHConnect(user string, ip string, port int, ignoreHostKey bool, w io.Writer) {
 
 	// Connect to the SSH agent
 	sshAgent, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK"))
@@ -30,13 +31,6 @@ func SSHConnect(user string, ip string, port int, ignoreHostKey bool) {
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // Use only in a safe environment
 	}
 
-	// config := &ssh.ClientConfig{
-	// 	User: "root",
-	// 	Auth: []ssh.AuthMethod{
-	// 		ssh.PublicKeys(signer),
-	// 	},
-	// 	HostKeyCallback: hostKeyCallback,
-	// }
 	addr := fmt.Sprintf("%s:%v", ip, port)
 	client, err := ssh.Dial("tcp", addr, config)
 	if err != nil {
@@ -59,7 +53,9 @@ func SSHConnect(user string, ip string, port int, ignoreHostKey bool) {
 	}
 
 	//set input and output
-	session.Stdout = os.Stdout
+	//session.Stdout = os.Stdout
+
+	session.Stdout = w
 	session.Stdin = os.Stdin
 	session.Stderr = os.Stderr
 

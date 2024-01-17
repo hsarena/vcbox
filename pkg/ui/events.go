@@ -73,6 +73,9 @@ func (ui *UI) vmEventHandlers() {
 			ui.app.SetFocus(ui.side.vms)
 		case tcell.KeyTab:
 			ui.app.SetFocus(ui.side.datacenters)
+		case tcell.KeyCtrlR:
+			ui.selectedTab = remote
+			ui.remoteToHost()
 		}
 		return event
 	})

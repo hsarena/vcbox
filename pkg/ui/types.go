@@ -21,8 +21,8 @@ type tab struct {
 	infos      *tview.TextView
 	logs       *tview.TextView
 	events     *tview.TextView
-	monitoring *tview.Flex
-	remote     *tview.Flex
+	monitoring *tview.TextView
+	remote     *tview.TextView
 }
 
 type side struct {
