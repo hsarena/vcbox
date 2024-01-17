@@ -2,27 +2,21 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"net/url"
 	"os"
 	"strconv"
 
 	"github.com/spf13/cobra"
 	"github.com/vmware/govmomi"
 
+	"github.com/hsarena/vcbox/pkg/ssh"
 	"github.com/hsarena/vcbox/pkg/ui"
+	"github.com/hsarena/vcbox/pkg/vmware"
 )
 
-type vcCred struct {
-	address  string
-	username string
-	password string
-	insecure bool
-}
-
 var (
-	vcc vcCred
+	vcc vmware.VCClient
+	sc  ssh.SSHClient
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -30,7 +24,7 @@ var rootCmd = &cobra.Command{
 	Use:   "vcbox",
 	Short: "VMware vCenter Text User Interface as a Box",
 	Run: func(cmd *cobra.Command, args []string) {
-		u, err := parseCredentials(&vcc)
+		u, err := vmware.ParseCredentials(&vcc)
 		if err != nil {
 			log.Printf("%s", err.Error())
 		}
@@ -38,7 +32,7 @@ var rootCmd = &cobra.Command{
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		c, err := govmomi.NewClient(ctx, u, vcc.insecure)
+		c, err := govmomi.NewClient(ctx, u, vcc.Insecure)
 		if err != nil {
 			log.Printf("%s", err.Error())
 		}
@@ -51,8 +45,6 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by mai.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -68,43 +60,9 @@ func init() {
 		boolVar = defaultValue
 	}
 
-	rootCmd.Flags().StringVar(&vcc.address, "address", os.Getenv("VCURL"), "The Url/address of a VMware vCenter server")
-	rootCmd.Flags().StringVar(&vcc.username, "user", os.Getenv("VCUSER"), "The Url/address of a VMware vCenter server")
-	rootCmd.Flags().StringVar(&vcc.password, "password", os.Getenv("VCPASS"), "The Url/address of a VMware vCenter server")
-	rootCmd.Flags().BoolVar(&vcc.insecure, "insecure", boolVar, "The Url/address of a VMware vCenter server")
-}
-
-func parseCredentials(vcc *vcCred) (*url.URL, error) {
-
-	// Check that an address was actually entered
-	if vcc.address == "" {
-		return nil, fmt.Errorf("no VMware vcCredenter URL/Address has been submitted")
-	}
-
-	// Check that the URL can be parsed
-	u, err := url.Parse(vcc.address)
-	if err != nil {
-		return nil, fmt.Errorf("url can't be parsed, ensure it is https://username:password/<address>/sdk")
-	}
-
-	// Check if a username was entered
-	if vcc.username == "" {
-		// if no username does one exist as part of the url
-		if u.User.Username() == "" {
-			return nil, fmt.Errorf("no VMware vcCredenter Username has been submitted")
-		}
-	} else {
-		// A username was submitted update the url
-		u.User = url.User(vcc.username)
-	}
-
-	if vcc.password == "" {
-		_, set := u.User.Password()
-		if !set {
-			return nil, fmt.Errorf("no VMware vcCredenter Password has been submitted")
-		}
-	} else {
-		u.User = url.UserPassword(u.User.Username(), vcc.password)
-	}
-	return u, nil
+	rootCmd.Flags().StringVar(&vcc.Address, "address", os.Getenv("VCURL"), "The Url/address of a VMware vCenter server")
+	rootCmd.Flags().StringVar(&vcc.Username, "user", os.Getenv("VCUSER"), "The Username VMware vCenter server")
+	rootCmd.Flags().StringVar(&vcc.Password, "password", os.Getenv("VCPASS"), "The Password of VMware vCenter server")
+	rootCmd.Flags().BoolVar(&vcc.Insecure, "insecure", boolVar, "Ignoring the secure connection")
+	rootCmd.Flags().StringVar(&sc.Username, "remote-user", os.Getenv("VCBOX_REMOTE_USER"), "The defualt remote user")
 }

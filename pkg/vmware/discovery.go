@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/find"
 	"github.com/vmware/govmomi/object"
 	"github.com/vmware/govmomi/vim25/mo"
@@ -13,6 +14,22 @@ import (
 const (
 	defalutLogKey = "vmkernel"
 )
+
+func NewVMInventory(vmo mo.VirtualMachine) *VMInventory {
+
+	return &VMInventory{
+		Name:   vmo.Config.Name,
+		CPU:    vmo.Summary.Config.NumCpu,
+		Memory: vmo.Summary.Config.MemorySizeMB,
+		OS:     vmo.Guest.GuestFullName,
+		IP:     vmo.Guest.IpAddress,
+		Status: string(vmo.Summary.Runtime.PowerState),
+	}
+}
+
+func NewDiscoveryService(client *govmomi.Client) *DiscoveryService {
+	return &DiscoveryService{client: client}
+}
 
 // DiscoverDatacenters retrieves a list of datacenters.
 func (d *DiscoveryService) DiscoverDatacenters() ([]*object.Datacenter, error) {

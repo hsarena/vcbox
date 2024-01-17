@@ -3,9 +3,10 @@ package ui
 import (
 	"log"
 
-	"github.com/hsarena/vcbox/pkg/vmware"
 	"github.com/rivo/tview"
 	"github.com/vmware/govmomi"
+
+	"github.com/hsarena/vcbox/pkg/vmware"
 )
 
 func NewUI(client *govmomi.Client) *UI {
