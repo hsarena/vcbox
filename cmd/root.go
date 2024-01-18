@@ -6,11 +6,12 @@ import (
 	"os"
 	"strconv"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 	"github.com/vmware/govmomi"
 
 	"github.com/hsarena/vcbox/pkg/ssh"
-	"github.com/hsarena/vcbox/pkg/ui"
+	"github.com/hsarena/vcbox/pkg/tui"
 	"github.com/hsarena/vcbox/pkg/vmware"
 )
 
@@ -37,8 +38,13 @@ var rootCmd = &cobra.Command{
 			log.Printf("%s", err.Error())
 		}
 
-		if err := ui.NewUI(c).Run(); err != nil {
-			panic(err)
+		// if err := ui.NewUI(c).Run(); err != nil {
+		// 	panic(err)
+		// }
+
+		if _, err := tea.NewProgram(tui.InitialModel(c), tea.WithAltScreen()).Run(); err != nil {
+			log.Println("Error running program:", err)
+			os.Exit(1)
 		}
 
 		defer c.Logout(ctx)
