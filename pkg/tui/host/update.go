@@ -12,7 +12,6 @@ func (bh BubbleHost) Update(msg tea.Msg) (BubbleHost, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		horizontal, vertical := common.ListStyle.GetFrameSize()
 		paginatorHeight := lipgloss.Height(bh.list.Paginator.View())
-
 		bh.list.SetSize(msg.Width-horizontal, msg.Height-vertical-paginatorHeight)
 		bh.viewport = viewport.New(msg.Width, msg.Height)
 		bh.viewport.SetContent(bh.logView())

@@ -27,6 +27,7 @@ func InitialModel(inventory []vmware.Inventory) BubbleDatacenter {
 	l := list.New(items, itemDelegate{}, 0, 0)
 	l.Title = "Datacenters"
 	l.SetShowHelp(false)
+	l.SetShowStatusBar(false)
 
 	return BubbleDatacenter{list: l}
 }

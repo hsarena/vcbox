@@ -17,7 +17,6 @@ func (bh BubbleHost) View() string {
 
 	return lipgloss.JoinHorizontal(
 		lipgloss.Top, bh.listView(), bh.viewport.View())
-	//return bh.ListView()
 }
 
 func (bh BubbleHost) listView() string {
@@ -60,8 +59,8 @@ func (bh BubbleHost) logView() string {
 }
 
 func renderHostDetails(i item) string {
-	dcName := fmt.Sprintf("\nName: %s", i.name)
-	return dcName
+	hostName := fmt.Sprintf("\nName: %s", i.name)
+	return hostName
 }
 
 func renderHostLog(i item) string {

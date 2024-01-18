@@ -13,8 +13,6 @@ github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81/go.mod h1:Yyn
 github.com/cpuguy83/go-md2man/v2 v2.0.3/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/evertras/bubble-table v0.15.6 h1:CBty0j5kYJoT40dI0/FDg2PlxAEuwUhw7KK0cziBmzw=
-github.com/evertras/bubble-table v0.15.6/go.mod h1:SPOZKbIpyYWPHBNki3fyNpiPBQkvkULAtOT7NTD5fKY=
 github.com/gdamore/encoding v1.0.0 h1:+7OoQ1Bc6eTm5niUzBa0Ctsh6JbMW6Ra+YNuAtDBdko=
 github.com/gdamore/encoding v1.0.0/go.mod h1:alR0ol34c49FCSBLjhosxzcPHQbf2trDkoo5dl+VrEg=
 github.com/gdamore/tcell/v2 v2.6.1-0.20231203215052-2917c3801e73 h1:SeDV6ZUSVlTAUUPdMzPXgMyj96z+whQJRRUff8dIeic=

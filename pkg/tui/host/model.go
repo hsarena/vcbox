@@ -12,9 +12,8 @@ type item struct {
 	logs *object.DiagnosticLog
 }
 
-func (i item) Name() string                { return i.name }
-func (i item) Logs() *object.DiagnosticLog { return i.logs }
-func (i item) FilterValue() string         { return i.name }
+func (i item) Name() string        { return i.name }
+func (i item) FilterValue() string { return i.name }
 
 type BubbleHost struct {
 	list     list.Model
@@ -25,7 +24,8 @@ func InitialModel(inventory []vmware.HostInventory) BubbleHost {
 	items := hostToItem(inventory)
 	l := list.New(items, itemDelegate{}, 0, 0)
 	l.Title = "Hosts"
-	l.SetShowHelp(true)
+	l.SetShowHelp(false)
+	l.SetShowStatusBar(false)
 	return BubbleHost{list: l}
 }
 

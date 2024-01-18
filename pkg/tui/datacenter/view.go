@@ -14,7 +14,6 @@ func (bd BubbleDatacenter) View() string {
 
 	return lipgloss.JoinHorizontal(
 		lipgloss.Top, bd.listView(), bd.viewport.View())
-	//return bd.ListView()
 }
 
 func (bd BubbleDatacenter) listView() string {

@@ -12,7 +12,6 @@ func (bd BubbleDatacenter) Update(msg tea.Msg) (BubbleDatacenter, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		horizontal, vertical := common.ListStyle.GetFrameSize()
 		paginatorHeight := lipgloss.Height(bd.list.Paginator.View())
-
 		bd.list.SetSize(msg.Width-horizontal, msg.Height-vertical-paginatorHeight)
 		bd.viewport = viewport.New(msg.Width, msg.Height)
 		bd.viewport.SetContent(bd.detailView())
