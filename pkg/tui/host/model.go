@@ -26,7 +26,7 @@ func NewBubbleHost(l list.Model) BubbleHost {
 
 func InitialModel(inventory []vmware.HostInventory) BubbleHost {
 	items := hostToItem(inventory)
-	l := list.New(items, itemDelegate{}, 0, 0)
+	l := list.New(items, hostItemDelegate{}, 0, 0)
 	l.Title = "Hosts"
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
@@ -47,7 +47,7 @@ func hostToItem(hosts []vmware.HostInventory) []list.Item {
 
 func MockInitialModel(inventory []vmware.MockHostInventory) BubbleHost {
 	items := mockHostToItem(inventory)
-	l := list.New(items, itemDelegate{}, 0, 0)
+	l := list.New(items, hostItemDelegate{}, 0, 0)
 	l.Title = "Hosts"
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)

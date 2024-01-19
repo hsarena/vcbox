@@ -96,5 +96,5 @@ func init() {
 	rootCmd.Flags().StringVar(&vcc.Password, "password", os.Getenv("VCPASS"), "The Password of VMware vCenter server")
 	rootCmd.Flags().BoolVar(&vcc.Insecure, "insecure", boolVar, "Ignoring the secure connection")
 	rootCmd.Flags().StringVar(&sc.Username, "remote-user", os.Getenv("VCBOX_REMOTE_USER"), "The defualt remote user")
-	rootCmd.Flags().BoolVar(&mck, "is-mock", false, "Is app running with mock data")
+	rootCmd.Flags().BoolVar(&mck, "mock", false, "Running app with mock data")
 }

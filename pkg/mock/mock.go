@@ -22,30 +22,29 @@ func NewMockService() *MockService {
 
 func (s *MockService) FetchInventory() ([]vmware.MockInventory, error) {
 	dcD := [3]string{"HWB", "AST", "AFR"}
+	crD := [3][]string{
+		{"srv-hwb-01", "srv-hwb-02"},
+		{"srv-ast-01", "srv-ast-02", "srv-ast-03"},
+		{"srv-afr-01", "srv-afr-02", "srv-afr-03"}}
+	vms := [3][]string{
+		{"H-VM-01", "H-VM-02", "H-VM-03", "H-VM-04", "H-VM-05"},
+		{"VM-01", "VM-02", "VM-03", "VM-04", "VM-05",
+			"VM-06", "VM-07", "VM-08", "VM-09", "VM-10",
+			"VM-11", "VM-12", "VM-13", "VM-14", "VM-15"},
+		{"A-VM-01", "A-VM-02", "A-VM-03", "A-VM-04", "A-VM-05",
+			"A-VM-06", "A-VM-07", "A-VM-08", "A-VM-09", "A-VM-10"}}
 	in := make([]vmware.MockInventory, len(dcD))
-	for i, dc := range dcD {
-		in[i].Datacenter = dc
-		crD := [3]string{"srv-01", "srv-02", "srv-03"}
-		hostI := make([]vmware.MockHostInventory, len(crD))
-		for i, c := range crD {
+	for id, dc := range dcD {
+		in[id].Datacenter = dc
+		hostI := make([]vmware.MockHostInventory, len(crD[id]))
+		for i, c := range crD[id] {
 			hostI[i].ComputeResource = c
 			hostI[i].Log = fmt.Sprintf("This is the mock log of host [%s]", c)
 		}
-		vms := [10]string{"VM-01",
-			"VM-02",
-			"VM-03",
-			"VM-04",
-			"VM-05",
-			"VM-06",
-			"VM-07",
-			"VM-08",
-			"VM-09",
-			"VM-10"}
-
-		vmI := make([]vmware.MockVMInventory, len(vms))
-		for i := range vms {
+		vmI := make([]vmware.MockVMInventory, len(vms[id]))
+		for i, v := range vms[id] {
 			vm := &vmware.MockVMInventory{
-				Name:   vms[i],
+				Name:   v,
 				OS:     "openSUSE",
 				CPU:    4,
 				Memory: 4096,
@@ -54,8 +53,8 @@ func (s *MockService) FetchInventory() ([]vmware.MockInventory, error) {
 			}
 			vmI[i] = *vm
 		}
-		in[i].Hosts = hostI
-		in[i].VMs = vmI
+		in[id].Hosts = hostI
+		in[id].VMs = vmI
 	}
 	return in, nil
 }
@@ -120,14 +119,13 @@ func updateByState(m model) (model, tea.Cmd) {
 	switch m.state {
 	case showDatacenterView:
 		m.state = showHostView
-		m.bh, cmd = m.bh.Update(windowSizeMsg)
+		m.bh, cmd = m.bh.MockUpdateList(m.inventory[m.bd.GetSelectedItem()].Hosts, windowSizeMsg)
 	case showHostView:
 		m.state = showVMView
-		//m.bd, cmd = m.bd.Update(windowSizeMsg)
-		m.bv, cmd = m.bv.Update(windowSizeMsg)
+		m.bv, cmd = m.bv.MockUpdateList(m.inventory[m.bd.GetSelectedItem()].VMs, windowSizeMsg)
 	case showVMView:
 		m.state = showDatacenterView
-		m.bv, cmd = m.bv.Update(windowSizeMsg)
+		m.bv, cmd = m.bv.MockUpdateList(m.inventory[m.bd.GetSelectedItem()].VMs, windowSizeMsg)
 	default:
 		m.state = showDatacenterView
 		m.bd, cmd = m.bd.Update(windowSizeMsg)

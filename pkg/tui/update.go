@@ -51,14 +51,13 @@ func updateByState(m model) (model, tea.Cmd) {
 	switch m.state {
 	case showDatacenterView:
 		m.state = showHostView
-		m.bh, cmd = m.bh.Update(windowSizeMsg)
+		m.bh, cmd = m.bh.UpdateList(m.inventory[m.bd.GetSelectedItem()].Hosts, windowSizeMsg)
 	case showHostView:
 		m.state = showVMView
-		//m.bd, cmd = m.bd.Update(windowSizeMsg)
-		m.bv, cmd = m.bv.Update(windowSizeMsg)
+		m.bv, cmd = m.bv.UpdateList(m.inventory[m.bd.GetSelectedItem()].VMs, windowSizeMsg)
 	case showVMView:
 		m.state = showDatacenterView
-		m.bv, cmd = m.bv.Update(windowSizeMsg)
+		m.bv, cmd = m.bv.UpdateList(m.inventory[m.bd.GetSelectedItem()].VMs, windowSizeMsg)
 	default:
 		m.state = showDatacenterView
 		m.bd, cmd = m.bd.Update(windowSizeMsg)

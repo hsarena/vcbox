@@ -9,12 +9,12 @@ import (
 	"github.com/hsarena/vcbox/pkg/tui/common"
 )
 
-type itemDelegate struct{}
+type hostItemDelegate struct{}
 
-func (d itemDelegate) Height() int                               { return 1 }
-func (d itemDelegate) Spacing() int                              { return 0 }
-func (d itemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
-func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+func (d hostItemDelegate) Height() int                               { return 1 }
+func (d hostItemDelegate) Spacing() int                              { return 0 }
+func (d hostItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
+func (d hostItemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
 	i, ok := listItem.(item)
 	if !ok {
 		return
@@ -23,7 +23,7 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 	line := i.name
 
 	if index == m.Index() {
-		line = common.ListSelectedListItemStyle.Render("> " + line)
+		line = common.ListSelectedListItemStyle.Render("_|" + line)
 	} else {
 		line = common.ListItemStyle.Render(line)
 	}
