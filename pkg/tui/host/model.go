@@ -44,3 +44,23 @@ func hostToItem(hosts []vmware.HostInventory) []list.Item {
 
 	return items
 }
+
+func MockInitialModel(inventory []vmware.MockHostInventory) BubbleHost {
+	items := mockHostToItem(inventory)
+	l := list.New(items, itemDelegate{}, 0, 0)
+	l.Title = "Hosts"
+	l.SetShowHelp(false)
+	l.SetShowStatusBar(false)
+	return BubbleHost{list: l}
+}
+
+func mockHostToItem(hosts []vmware.MockHostInventory) []list.Item {
+	items := make([]list.Item, len(hosts))
+	for i, h := range hosts {
+		items[i] = item{
+			name: h.ComputeResource,
+		}
+	}
+
+	return items
+}

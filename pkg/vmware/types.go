@@ -35,3 +35,23 @@ type VCClient struct {
 	Password string
 	Insecure bool
 }
+
+type MockInventory struct {
+	Datacenter string
+	Hosts      []MockHostInventory
+	VMs        []MockVMInventory
+}
+
+type MockHostInventory struct {
+	Log             string
+	ComputeResource string
+}
+
+type MockVMInventory struct {
+	Name   string
+	CPU    int32
+	Memory int32
+	OS     string
+	IP     string
+	Status string
+}
