@@ -54,7 +54,8 @@ func updateByState(m model) (model, tea.Cmd) {
 		m.bh, cmd = m.bh.Update(windowSizeMsg)
 	case showHostView:
 		m.state = showVMView
-		m.bd, cmd = m.bd.Update(windowSizeMsg)
+		//m.bd, cmd = m.bd.Update(windowSizeMsg)
+		m.bv, cmd = m.bv.Update(windowSizeMsg)
 	case showVMView:
 		m.state = showDatacenterView
 		m.bv, cmd = m.bv.Update(windowSizeMsg)
