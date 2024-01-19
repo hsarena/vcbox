@@ -30,7 +30,7 @@ func NewBubbleVM(l list.Model) BubbleVM {
 
 func InitialModel(inventory []vmware.VMInventory) BubbleVM {
 	items := vmToItem(inventory)
-	l := list.New(items, itemDelegate{}, 0, 0)
+	l := list.New(items, vmItemDelegate{}, 0, 0)
 	l.Title = "VirtualMachines"
 	l.SetShowHelp(true)
 	l.SetShowStatusBar(true)
@@ -54,8 +54,8 @@ func vmToItem(vms []vmware.VMInventory) []list.Item {
 
 func MockInitialModel(inventory []vmware.MockVMInventory) BubbleVM {
 	items := mockVMToItem(inventory)
-	l := list.New(items, itemDelegate{}, 0, 0)
-	l.Title = "VirtualMachines"
+	l := list.New(items, vmItemDelegate{}, 0, 0)
+	l.Title = "Virtual Machines"
 	l.SetShowHelp(true)
 	l.SetShowStatusBar(true)
 	return BubbleVM{list: l}

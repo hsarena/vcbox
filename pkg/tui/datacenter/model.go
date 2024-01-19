@@ -28,7 +28,7 @@ func NewBubbleDatacenter(l list.Model) BubbleDatacenter {
 
 func InitialModel(inventory []vmware.Inventory) BubbleDatacenter {
 	items := dcToItem(inventory)
-	l := list.New(items, itemDelegate{}, 0, 0)
+	l := list.New(items, dcItemDelegate{}, 0, 0)
 	l.Title = "Datacenters"
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
@@ -51,7 +51,7 @@ func dcToItem(dcs []vmware.Inventory) []list.Item {
 
 func MockInitialModel(inventory []vmware.MockInventory) BubbleDatacenter {
 	items := mockDCToItem(inventory)
-	l := list.New(items, itemDelegate{}, 0, 0)
+	l := list.New(items, dcItemDelegate{}, 0, 0)
 	l.Title = "Datacenters"
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)

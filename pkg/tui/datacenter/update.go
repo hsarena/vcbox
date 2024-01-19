@@ -19,6 +19,9 @@ func (bd BubbleDatacenter) Update(msg tea.Msg) (BubbleDatacenter, tea.Cmd) {
 
 	var cmd tea.Cmd
 	bd.list, cmd = bd.list.Update(msg)
-
 	return bd, cmd
+}
+
+func (bd *BubbleDatacenter) GetSelectedItem() int {
+	return bd.list.Index()
 }
