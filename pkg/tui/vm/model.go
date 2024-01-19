@@ -24,6 +24,10 @@ type BubbleVM struct {
 	viewport viewport.Model
 }
 
+func NewBubbleVM(l list.Model) BubbleVM {
+	return BubbleVM{list: l}
+}
+
 func InitialModel(inventory []vmware.VMInventory) BubbleVM {
 	items := vmToItem(inventory)
 	l := list.New(items, itemDelegate{}, 0, 0)

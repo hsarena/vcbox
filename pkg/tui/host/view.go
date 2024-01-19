@@ -12,11 +12,14 @@ import (
 	"github.com/muesli/reflow/wordwrap"
 )
 
-func (bh BubbleHost) View() string {
-	bh.viewport.SetContent(bh.detailView())
-
-	return lipgloss.JoinHorizontal(
-		lipgloss.Top, bh.listView(), bh.viewport.View())
+func (bh BubbleHost) View(showLogs bool) string {
+	if showLogs {
+		bh.viewport.SetContent(bh.detailView())
+		return lipgloss.JoinHorizontal(
+			lipgloss.Top, bh.listView(), bh.viewport.View())
+	} else {
+		return bh.listView()
+	}
 }
 
 func (bh BubbleHost) listView() string {

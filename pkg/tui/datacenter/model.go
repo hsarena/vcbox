@@ -22,6 +22,10 @@ type BubbleDatacenter struct {
 	viewport viewport.Model
 }
 
+func NewBubbleDatacenter(l list.Model) BubbleDatacenter {
+	return BubbleDatacenter{list: l}
+}
+
 func InitialModel(inventory []vmware.Inventory) BubbleDatacenter {
 	items := dcToItem(inventory)
 	l := list.New(items, itemDelegate{}, 0, 0)

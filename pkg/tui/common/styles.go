@@ -22,11 +22,6 @@ var (
 			Foreground(lipgloss.AdaptiveColor{Light: "#9B9B9B", Dark: "#5C5C5C"}).
 			PaddingTop(1).
 			PaddingBottom(1)
-	TableMainStyle = lipgloss.NewStyle().
-			Align(lipgloss.Center)
-	TableHeaderStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.Color("#569cd6")).
-				Bold(true)
 	HeaderStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#569cd6")).
 			PaddingBottom(1).

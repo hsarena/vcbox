@@ -9,11 +9,14 @@ import (
 	"github.com/muesli/reflow/wordwrap"
 )
 
-func (bd BubbleDatacenter) View() string {
-	bd.viewport.SetContent(bd.detailView())
-
-	return lipgloss.JoinHorizontal(
-		lipgloss.Top, bd.listView(), bd.viewport.View())
+func (bd BubbleDatacenter) View(showDetails bool) string {
+	if showDetails {
+		bd.viewport.SetContent(bd.detailView())
+		return lipgloss.JoinHorizontal(
+			lipgloss.Top, bd.listView(), bd.viewport.View())
+	} else {
+		return bd.listView()
+	}
 }
 
 func (bd BubbleDatacenter) listView() string {

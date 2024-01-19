@@ -38,5 +38,4 @@ func InitialModel(client *govmomi.Client) model {
 		selectedVM:   0,
 		inventory:    inventory,
 	}
-
 }

@@ -20,6 +20,10 @@ type BubbleHost struct {
 	viewport viewport.Model
 }
 
+func NewBubbleHost(l list.Model) BubbleHost {
+	return BubbleHost{list: l}
+}
+
 func InitialModel(inventory []vmware.HostInventory) BubbleHost {
 	items := hostToItem(inventory)
 	l := list.New(items, itemDelegate{}, 0, 0)
