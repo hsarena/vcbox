@@ -8,6 +8,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
+
 	"github.com/vmware/govmomi"
 
 	"github.com/hsarena/vcbox/pkg/ssh"
@@ -48,6 +49,11 @@ var rootCmd = &cobra.Command{
 		}
 
 		defer c.Logout(ctx)
+		// if _, err := tea.NewProgram(mock.InitialModel(), tea.WithAltScreen()).Run(); err != nil {
+		// 	log.Println("Error running program:", err)
+		// 	os.Exit(1)
+		// }
+
 	},
 }
 
