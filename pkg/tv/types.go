@@ -1,4 +1,4 @@
-package ui
+package tv
 
 import (
 	"github.com/hsarena/vcbox/pkg/vmware"
