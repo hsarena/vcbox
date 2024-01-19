@@ -34,6 +34,7 @@ func (bd BubbleDatacenter) detailView() string {
 
 	if it := bd.list.SelectedItem(); it != nil {
 		builder.WriteString(detailsHeader)
+		builder.WriteString("\n")
 		builder.WriteString(renderDCDetails(it.(item)))
 		builder.WriteString(divider)
 	}

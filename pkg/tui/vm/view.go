@@ -35,6 +35,7 @@ func (bv BubbleVM) detailView() string {
 	if it := bv.list.SelectedItem(); it != nil {
 
 		builder.WriteString(detailsHeader)
+		builder.WriteString("\n")
 		builder.WriteString(renderVMDetails(it.(item)))
 		builder.WriteString(divider)
 	}
