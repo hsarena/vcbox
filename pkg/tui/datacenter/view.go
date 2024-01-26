@@ -9,21 +9,30 @@ import (
 	"github.com/muesli/reflow/wordwrap"
 )
 
-func (bd BubbleDatacenter) View(showDetails bool) string {
-	if showDetails {
-		bd.viewport.SetContent(bd.detailView())
-		return lipgloss.JoinHorizontal(
-			lipgloss.Top, bd.listView(), bd.viewport.View())
-	} else {
-		return bd.listView()
+func (bd BubbleDatacenter) View(svt common.ShowViewType, height int) string {
+	switch svt {
+	case common.ShowList:
+		return bd.listView(height)
+	case common.ShowDetail:
+		return bd.detailView()
+	case common.ShowFull:
+		return bd.fullView(height)
+	default:
+		return bd.fullView(height)
 	}
 }
 
-func (bd BubbleDatacenter) listView() string {
+func (bd BubbleDatacenter) fullView(height int) string {
+	bd.viewport.SetContent(bd.detailView())
+	return lipgloss.JoinHorizontal(
+		lipgloss.Top, bd.listView(height), bd.viewport.View())
+}
+
+func (bd BubbleDatacenter) listView(height int) string {
 	bd.list.Styles.Title = common.ListColorStyle
 	bd.list.Styles.FilterPrompt.Foreground(common.ListColorStyle.GetBackground())
 	bd.list.Styles.FilterCursor.Foreground(common.ListColorStyle.GetBackground())
-
+	bd.list.SetHeight(height / 8)
 	return common.ListStyle.Render(bd.list.View())
 }
 

@@ -2,6 +2,14 @@ package common
 
 import "github.com/charmbracelet/lipgloss"
 
+type ShowViewType int
+
+const (
+	ShowList ShowViewType = iota
+	ShowDetail
+	ShowFull
+)
+
 var (
 	ListStyle = lipgloss.NewStyle().
 			Width(30).

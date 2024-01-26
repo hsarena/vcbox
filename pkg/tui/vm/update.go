@@ -13,7 +13,7 @@ func (bv BubbleVM) Update(msg tea.Msg) (BubbleVM, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		horizontal, vertical := common.ListStyle.GetFrameSize()
 		paginatorHeight := lipgloss.Height(bv.list.Paginator.View())
-		bv.list.SetSize(msg.Width-horizontal, msg.Height-vertical-paginatorHeight)
+		bv.list.SetSize(msg.Width-horizontal, msg.Height/2-vertical-paginatorHeight)
 		bv.viewport = viewport.New(msg.Width, msg.Height)
 		bv.viewport.SetContent(bv.detailView())
 	}
@@ -29,7 +29,7 @@ func (bv BubbleVM) UpdateList(inventory []vmware.VMInventory, msg tea.Msg) (Bubb
 	case tea.WindowSizeMsg:
 		horizontal, vertical := common.ListStyle.GetFrameSize()
 		paginatorHeight := lipgloss.Height(bv.list.Paginator.View())
-		bv.list.SetSize(msg.Width-horizontal, msg.Height-vertical-paginatorHeight)
+		bv.list.SetSize(msg.Width-horizontal, msg.Height/2-vertical-paginatorHeight)
 		bv.viewport = viewport.New(msg.Width, msg.Height)
 		bv.viewport.SetContent(bv.detailView())
 	}
@@ -41,7 +41,7 @@ func (bv BubbleVM) MockUpdateList(inventory []vmware.MockVMInventory, msg tea.Ms
 	case tea.WindowSizeMsg:
 		horizontal, vertical := common.ListStyle.GetFrameSize()
 		paginatorHeight := lipgloss.Height(bv.list.Paginator.View())
-		bv.list.SetSize(msg.Width-horizontal, msg.Height-vertical-paginatorHeight)
+		bv.list.SetSize(msg.Width-horizontal, msg.Height/2-vertical-paginatorHeight)
 		bv.viewport = viewport.New(msg.Width, msg.Height)
 		bv.viewport.SetContent(bv.detailView())
 	}

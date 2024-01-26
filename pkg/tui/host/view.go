@@ -13,21 +13,30 @@ import (
 	"github.com/muesli/reflow/wordwrap"
 )
 
-func (bh BubbleHost) View(showLogs bool) string {
-	if showLogs {
-		bh.viewport.SetContent(bh.logView())
-		return lipgloss.JoinHorizontal(
-			lipgloss.Top, bh.listView(), bh.viewport.View())
-	} else {
-		return bh.listView()
+func (bd BubbleHost) View(svt common.ShowViewType, height int) string {
+	switch svt {
+	case common.ShowList:
+		return bd.listView(height)
+	case common.ShowDetail:
+		return bd.logView()
+	case common.ShowFull:
+		return bd.fullView(height)
+	default:
+		return bd.fullView(height)
 	}
 }
 
-func (bh BubbleHost) listView() string {
+func (bh BubbleHost) fullView(height int) string {
+	bh.viewport.SetContent(bh.logView())
+	return lipgloss.JoinHorizontal(
+		lipgloss.Top, bh.listView(height), bh.viewport.View())
+}
+
+func (bh BubbleHost) listView(height int) string {
 	bh.list.Styles.Title = common.ListColorStyle
 	bh.list.Styles.FilterPrompt.Foreground(common.ListColorStyle.GetBackground())
 	bh.list.Styles.FilterCursor.Foreground(common.ListColorStyle.GetBackground())
-
+	bh.list.SetHeight(height / 8)
 	return common.ListStyle.Render(bh.list.View())
 }
 
@@ -64,7 +73,7 @@ func renderHostLog(i item) string {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	buf := new(bytes.Buffer)
-	err := i.logs.Seek(ctx, 100)
+	err := i.logs.Seek(ctx, 20)
 	if err != nil {
 		log.Printf("%s", err.Error())
 	}
