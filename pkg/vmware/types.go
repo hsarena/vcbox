@@ -12,8 +12,8 @@ type Inventory struct {
 }
 
 type HostInventory struct {
-	Log             *object.DiagnosticLog
-	ComputeResource *object.ComputeResource
+	Log        *object.DiagnosticLog
+	HostSystem *object.HostSystem
 }
 
 type VMInventory struct {
@@ -29,6 +29,9 @@ type DiscoveryService struct {
 	client *govmomi.Client
 }
 
+type MetricsService struct {
+	client *govmomi.Client
+}
 type VCClient struct {
 	Address  string
 	Username string

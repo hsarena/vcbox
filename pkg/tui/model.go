@@ -24,6 +24,7 @@ type model struct {
 
 func InitialModel(client *govmomi.Client) model {
 	d := vmware.NewDiscoveryService(client)
+	m := vmware.NewMetricsService(client)
 	inventory, err := d.FetchInventory()
 	if err != nil {
 		log.Printf("%s", err.Error())
@@ -31,7 +32,7 @@ func InitialModel(client *govmomi.Client) model {
 	return model{
 		state:        showDatacenterView,
 		bd:           datacenter.InitialModel(inventory),
-		bh:           host.InitialModel(inventory[0].Hosts),
+		bh:           host.InitialModel(inventory[0].Hosts, m),
 		bv:           vm.InitialModel(inventory[0].VMs),
 		selectedDC:   0,
 		selectedHost: 0,

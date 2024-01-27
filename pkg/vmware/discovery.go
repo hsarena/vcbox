@@ -63,6 +63,24 @@ func (d *DiscoveryService) DiscoverComputeResource(dc *object.Datacenter) ([]*ob
 	return crs, err
 }
 
+// DiscoverComputeResource retrieves a list of compute resources.
+func (d *DiscoveryService) DiscoverHostSystem(dc *object.Datacenter) ([]*object.HostSystem, error) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if dc == nil {
+		return nil, fmt.Errorf("the datacenter is nil")
+	}
+
+	finder := find.NewFinder(d.client.Client, true)
+	finder.SetDatacenter(dc)
+	hosts, err := finder.HostSystemList(ctx, "*")
+	if err != nil {
+		return nil, fmt.Errorf("failed to discover hosts: %v", err)
+	}
+	return hosts, err
+}
+
 // DiscoverVMsInsideDC retrieves a list of VMs inside a datacenter.
 func (d *DiscoveryService) DiscoverVMsInsideDC(dc *object.Datacenter) ([]*object.VirtualMachine, error) {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -110,16 +128,11 @@ func (d *DiscoveryService) DiscoverVMInventory(vm *object.VirtualMachine) (*VMIn
 	return NewVMInventory(vmMo), nil
 }
 
-func (d *DiscoveryService) FetchHostLogs(cr *object.ComputeResource) (*object.DiagnosticLog, error) {
+func (d *DiscoveryService) FetchHostLogs(host *object.HostSystem) (*object.DiagnosticLog, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	hosts, err := cr.Hosts(ctx)
-	if err != nil {
-		log.Printf("%s", err.Error())
-		return nil, err
-	}
 	dLogM := object.NewDiagnosticManager(d.client.Client)
-	return dLogM.Log(ctx, hosts[0], defalutLogKey), nil
+	return dLogM.Log(ctx, host, defalutLogKey), nil
 }
 
 func (d *DiscoveryService) FetchInventory() ([]Inventory, error) {
@@ -131,15 +144,15 @@ func (d *DiscoveryService) FetchInventory() ([]Inventory, error) {
 	in := make([]Inventory, len(dcD))
 	for i, dc := range dcD {
 		in[i].Datacenter = dc
-		crD, err := d.DiscoverComputeResource(dc)
+		hostD, err := d.DiscoverHostSystem(dc)
 		if err != nil {
 			log.Printf("%s", err.Error())
 			return nil, err
 		}
-		hostI := make([]HostInventory, len(crD))
-		for i, c := range crD {
-			hostI[i].ComputeResource = c
-			hostI[i].Log, err = d.FetchHostLogs(c)
+		hostI := make([]HostInventory, len(hostD))
+		for i, h := range hostD {
+			hostI[i].HostSystem = h
+			hostI[i].Log, err = d.FetchHostLogs(h)
 			if err != nil {
 				log.Printf("%s", err.Error())
 				return nil, err

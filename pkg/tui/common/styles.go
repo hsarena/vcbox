@@ -38,4 +38,8 @@ var (
 			Border(lipgloss.NormalBorder(), false, true, false, false).
 			BorderForeground(lipgloss.Color("#f56642")).
 			Bold(true)
+
+	HostMetrics = []string{
+		"cpu.usagemhz.average",
+		"mem.overhead.average"}
 )
