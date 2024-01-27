@@ -14,7 +14,7 @@ import (
 	"github.com/vmware/govmomi/vim25/types"
 )
 
-var interval = flag.Int("i", 20, "Interval ID")
+var interval = flag.Int("i", 300, "Interval ID")
 
 func NewMetricsService(client *govmomi.Client) *MetricsService {
 	return &MetricsService{client: client}
@@ -79,18 +79,18 @@ func (m *MetricsService) FetchMetrics(obj types.ManagedObjectReference, metrics 
 		// // name := metric.Entity
 		// vm := object.NewHostSystem(m.client.Client, metric.Entity)
 		// name, err := vm.ObjectName(ctx)
-		if err != nil {
-			return nil, err
-		}
+		// if err != nil {
+		// 	return nil, err
+		// }
 		for _, v := range metric.Value {
 			// counter := counters[v.Name]
 			// units := counter.UnitInfo.GetElementDescription().Label
 
-			instance := v.Instance
-			if instance == "" {
-				instance = "-"
-			}
-			log.Println("about to create mapd")
+			// instance := v.Instance
+			// if instance == "" {
+			// 	instance = "-"
+			// }
+			// log.Println("about to create mapd")
 			if len(v.Value) != 0 {
 				// str += fmt.Sprintf("%s\t%s\t%s\n",
 				// 	v.Name, v.ValueCSV(), units)

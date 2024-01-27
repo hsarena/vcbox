@@ -1,5 +1,12 @@
 package util
 
+import (
+	"strings"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+)
+
 var isMock bool
 
 func SetMock(b bool) {
@@ -15,7 +22,16 @@ func ToF64(i64 []int64) []float64 {
 	var ii int64
 	var i int
 	for i, ii = range i64 {
-		f64[i] = float64(ii / 1000)
+		f64[i] = float64(ii)
 	}
 	return f64
+}
+
+func MetricIdToString(m string) string {
+	words := strings.Split(m, ".")
+	key := strings.ToLower(words[0])
+	for _, word := range words[1:] {
+		key += cases.Title(language.AmericanEnglish, cases.NoLower).String(word)
+	}
+	return key
 }

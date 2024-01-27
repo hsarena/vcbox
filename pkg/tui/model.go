@@ -33,7 +33,7 @@ func InitialModel(client *govmomi.Client) model {
 		state:        showDatacenterView,
 		bd:           datacenter.InitialModel(inventory),
 		bh:           host.InitialModel(inventory[0].Hosts, m),
-		bv:           vm.InitialModel(inventory[0].VMs),
+		bv:           vm.InitialModel(inventory[0].VMs, m),
 		selectedDC:   0,
 		selectedHost: 0,
 		selectedVM:   0,

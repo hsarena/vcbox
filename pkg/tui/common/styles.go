@@ -39,7 +39,11 @@ var (
 			BorderForeground(lipgloss.Color("#f56642")).
 			Bold(true)
 
-	HostMetrics = []string{
-		"cpu.usagemhz.average",
-		"mem.overhead.average"}
+	HostMetrics = []string{"cpu.usagemhz.average",
+		"mem.consumed.average"}
+	VMMetrics = []string{"cpu.usage.average",
+		"mem.usage.average",
+		"net.usage.average",
+		"datastore.maxTotalLatency.latest",
+	}
 )

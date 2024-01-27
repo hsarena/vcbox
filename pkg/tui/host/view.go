@@ -74,27 +74,27 @@ func (bh BubbleHost) metricsView() string {
 	metricsHeader := common.HeaderStyle.Render("Metrics")
 
 	if it := bh.list.SelectedItem(); it != nil {
-		log.Printf("about to fetch metrics for obj %v", it.(item).obj)
 		hostMetrics, err := bh.metrics.FetchMetrics(it.(item).obj, common.HostMetrics)
-		log.Printf("the hostMetrics is: %v", hostMetrics["cpu.usagemhz.average"].Value)
-		vf64 := util.ToF64(hostMetrics["cpu.usagemhz.average"].Value)
-		log.Println("about to draw a graph")
-		graph := asciigraph.Plot(vf64, asciigraph.AxisColor(asciigraph.DarkGoldenrod),
-			asciigraph.AxisColor(asciigraph.IndianRed),
-			asciigraph.Height(10),
-			asciigraph.Width(30),
-			asciigraph.Caption("CPU Usagemhz Average"))
-
 		if err != nil {
 			log.Printf("%s", err.Error())
 		}
+		graph := make([]string, len(hostMetrics))
 		builder.WriteString(detailsHeader)
 		builder.WriteString("\n")
 		builder.WriteString(renderHostDetails(it.(item)))
 		builder.WriteString(divider)
 		builder.WriteString(metricsHeader)
 		builder.WriteString("\n\n")
-		builder.WriteString(graph)
+		for i, x := range hostMetrics {
+			vf64 := util.ToF64(x.Value)
+			graph = append(graph, asciigraph.Plot(vf64, asciigraph.SeriesColors(asciigraph.DarkGoldenrod),
+				asciigraph.AxisColor(asciigraph.IndianRed),
+				asciigraph.Height(bh.viewport.Height/3),
+				asciigraph.Width(bh.viewport.Width/3),
+				asciigraph.Caption(util.MetricIdToString(i)),
+				asciigraph.Offset(2)))
+		}
+		builder.WriteString(lipgloss.JoinHorizontal(lipgloss.Top, graph...))
 	}
 	details := wordwrap.String(builder.String(), bh.viewport.Width)
 

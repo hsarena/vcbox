@@ -3,6 +3,7 @@ package vmware
 import (
 	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/object"
+	"github.com/vmware/govmomi/vim25/types"
 )
 
 type Inventory struct {
@@ -23,6 +24,7 @@ type VMInventory struct {
 	OS     string
 	IP     string
 	Status string
+	VM     types.ManagedObjectReference
 }
 
 type DiscoveryService struct {

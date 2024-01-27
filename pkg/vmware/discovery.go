@@ -24,6 +24,7 @@ func NewVMInventory(vmo mo.VirtualMachine) *VMInventory {
 		OS:     vmo.Guest.GuestFullName,
 		IP:     vmo.Guest.IpAddress,
 		Status: string(vmo.Summary.Runtime.PowerState),
+		VM:     vmo.Self,
 	}
 }
 
