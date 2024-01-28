@@ -28,6 +28,20 @@ func NewVMInventory(vmo mo.VirtualMachine) *VMInventory {
 	}
 }
 
+func NewHostInventory(hmo mo.HostSystem) *HostInventory {
+
+	return &HostInventory{
+		CpuModel: hmo.Summary.Hardware.CpuModel,
+		NumCpuCores: hmo.Summary.Hardware.NumCpuCores,
+		MemorySize: hmo.Summary.Hardware.MemorySize,
+		Uptime: hmo.Summary.QuickStats.Uptime,
+		NumNics: hmo.Summary.Hardware.NumNics,
+		NumHBAs: hmo.Summary.Hardware.NumHBAs,
+		HostMaxVirtualDiskCapacity: hmo.Runtime.HostMaxVirtualDiskCapacity,
+		PowerState: string(hmo.Summary.Runtime.PowerState),
+	}
+}
+
 func NewDiscoveryService(client *govmomi.Client) *DiscoveryService {
 	return &DiscoveryService{client: client}
 }
@@ -129,6 +143,25 @@ func (d *DiscoveryService) DiscoverVMInventory(vm *object.VirtualMachine) (*VMIn
 	return NewVMInventory(vmMo), nil
 }
 
+// DiscoverVMInfo retrieves details of a VM.
+func (d *DiscoveryService) DiscoverHostInventory(host *object.HostSystem) (*HostInventory, error) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	var hostMo mo.HostSystem
+
+	err := object.NewHostSystem(d.client.Client, host.Reference()).Properties(ctx, host.Reference(), []string{"summary", "runtime"}, &hostMo)
+	if err != nil {
+		return nil, fmt.Errorf("failed to discover VM info for %s: %v", host.Name(), err)
+	}
+
+	if err != nil {
+		log.Printf("failed to discover VM Host info for %s: %v", host.Name(), err)
+	}
+	
+	return NewHostInventory(hostMo), nil
+}
+
 func (d *DiscoveryService) FetchHostLogs(host *object.HostSystem) (*object.DiagnosticLog, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -152,6 +185,12 @@ func (d *DiscoveryService) FetchInventory() ([]Inventory, error) {
 		}
 		hostI := make([]HostInventory, len(hostD))
 		for i, h := range hostD {
+			host, err := d.DiscoverHostInventory(h)
+			if err != nil {
+				log.Printf("%s", err.Error())
+				return nil, err
+			}
+			hostI[i] = *host
 			hostI[i].HostSystem = h
 			hostI[i].Log, err = d.FetchHostLogs(h)
 			if err != nil {

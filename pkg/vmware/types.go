@@ -13,6 +13,14 @@ type Inventory struct {
 }
 
 type HostInventory struct {
+	CpuModel string
+	NumCpuCores int16
+	MemorySize int64
+	Uptime int32
+	NumNics int32
+	NumHBAs int32
+	HostMaxVirtualDiskCapacity int64
+	PowerState string
 	Log        *object.DiagnosticLog
 	HostSystem *object.HostSystem
 }
