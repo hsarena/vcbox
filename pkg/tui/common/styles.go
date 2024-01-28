@@ -30,6 +30,9 @@ var (
 			PaddingTop(1).
 			PaddingBottom(1).
 			PaddingLeft(1)
+	MetricsStyle = lipgloss.NewStyle().
+			Padding(1).
+			Align(lipgloss.Left)
 	DividerStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#f56642")).
 			PaddingTop(1)
@@ -44,6 +47,13 @@ var (
 	VMMetrics = []string{"cpu.usage.average",
 		"mem.usage.average",
 		"net.usage.average",
-		"datastore.maxTotalLatency.latest",
+		"virtualDisk.write.average",
+		"virtualDisk.read.average",
+	}
+	DCMetrics = []string{"vmop.numPoweron.latest",
+		"vmop.numPoweroff.latest",
+		"vmop.numCreate.latest",
+		"vmop.numReconfigure.latest",
+		"vmop.numVMotion.latest",
 	}
 )
