@@ -37,7 +37,7 @@ func (bv BubbleVM) listView(height int) string {
 	bv.list.Styles.Title = common.ListColorStyle
 	bv.list.Styles.FilterPrompt.Foreground(common.ListColorStyle.GetBackground())
 	bv.list.Styles.FilterCursor.Foreground(common.ListColorStyle.GetBackground())
-	bv.list.SetHeight(height / 2)
+	bv.list.SetHeight(5 * height/9 + height/27 + height/81)
 	return common.ListStyle.Render(bv.list.View())
 }
 
@@ -68,7 +68,7 @@ func (bv BubbleVM) metricsView() string {
 		if err != nil {
 			log.Printf("%s", err.Error())
 		}
-		graph := make([]string, len(vmMetrics))
+		graph := []string{}
 		builder.WriteString(detailsHeader)
 		builder.WriteString("\n")
 		builder.WriteString(renderVMDetails(it.(item)))
@@ -78,26 +78,32 @@ func (bv BubbleVM) metricsView() string {
 		for i, x := range vmMetrics {
 			vf64 := util.ToF64(x.Value)
 			graph = append(graph, asciigraph.Plot(vf64, asciigraph.SeriesColors(asciigraph.DarkGoldenrod),
-				asciigraph.AxisColor(asciigraph.IndianRed),
-				asciigraph.Height(bv.viewport.Height/5),
-				asciigraph.Width(bv.viewport.Width/7),
-				asciigraph.Caption(util.MetricIdToString(i)),
-				asciigraph.Offset(2)))
+			asciigraph.AxisColor(asciigraph.IndianRed),
+			asciigraph.Height(bv.viewport.Height/5),
+			asciigraph.Width(bv.viewport.Width/5),
+			asciigraph.Caption(util.MetricIdToString(i)),
+			asciigraph.Offset(5)))
 		}
-		builder.WriteString(lipgloss.JoinHorizontal(lipgloss.Top, graph...))
+		
+		builder.WriteString(lipgloss.JoinVertical(lipgloss.Top,
+			lipgloss.JoinHorizontal(lipgloss.Top, graph[:len(graph)/2]...), "\n\n\n",
+			lipgloss.JoinHorizontal(lipgloss.Top, graph[len(graph)/2:]...)))
+		
+		
+
 	}
 	details := wordwrap.String(builder.String(), bv.viewport.Width)
 
-	return common.DetailStyle.Render(details)
+	return common.MetricsStyle.Render(details)
 }
 
 func renderVMDetails(i item) string {
-	vmName := fmt.Sprintf("\nName: %s", i.name)
-	vmOS := fmt.Sprintf("\nOS: %s", i.os)
-	vmCPU := fmt.Sprintf("\nCPU: %v", i.cpu)
-	vmMemory := fmt.Sprintf("\nMemory: %v", i.memory)
-	vmIP := fmt.Sprintf("\nIP: %v", i.ip)
-	vmStatus := fmt.Sprintf("\nStatus: %s", i.status)
+	vmName := fmt.Sprintf("Name: %s", i.name)
+	vmOS := fmt.Sprintf("\tOS: %s", i.os)
+	vmCPU := fmt.Sprintf("\tCPU: %v", i.cpu)
+	vmMemory := fmt.Sprintf("\tMemory: %vGB", i.memory)
+	vmIP := fmt.Sprintf("\tIP: %v", i.ip)
+	vmStatus := fmt.Sprintf("\tStatus: %s", i.status)
 
 	return vmName + vmOS + vmCPU + vmMemory + vmIP + vmStatus
 }

@@ -46,7 +46,7 @@ func vmToItem(vms []vmware.VMInventory) []list.Item {
 		items[i] = item{
 			name:   v.Name,
 			cpu:    v.CPU,
-			memory: v.Memory,
+			memory: v.Memory/1024,
 			os:     v.OS,
 			ip:     v.IP,
 			status: v.Status,
