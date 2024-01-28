@@ -102,8 +102,17 @@ func (bh BubbleHost) metricsView() string {
 }
 
 func renderHostDetails(i item) string {
-	hostName := fmt.Sprintf("\nName: %s", i.name)
-	return hostName
+
+	hostName := fmt.Sprintf("Name: %s", i.name)
+	uptime := fmt.Sprintf("\tUptime: %v days",i.uptime)
+	powerState := fmt.Sprintf("\tStatus: %v",i.powerState)
+	cpuModel := fmt.Sprintf("\nCPU Model: %v",i.cpuModel)
+	numCpuCores := fmt.Sprintf("\tCPU Cores: %v",i.numCpuCores)
+	memorySize := fmt.Sprintf("\nMemory: %vGB",i.memorySize)
+	numNics := fmt.Sprintf("\tNics: %v",i.numNics)
+	numHBAs := fmt.Sprintf("\tHBAs: %v",i.numHBAs)
+	thostMaxVirtualDiskCapacity := fmt.Sprintf("\nhostMaxVirtualDiskCapacity: %vTB",i.hostMaxVirtualDiskCapacity)
+	return hostName + uptime + powerState + cpuModel + numCpuCores + memorySize + numNics + numHBAs + thostMaxVirtualDiskCapacity
 }
 
 func renderHostLog(i item) string {
