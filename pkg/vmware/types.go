@@ -3,6 +3,7 @@ package vmware
 import (
 	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/object"
+	"github.com/vmware/govmomi/vim25/types"
 )
 
 type Inventory struct {
@@ -12,8 +13,15 @@ type Inventory struct {
 }
 
 type HostInventory struct {
-	Log             *object.DiagnosticLog
-	ComputeResource *object.ComputeResource
+	CpuModel string
+	NumCpuCores int16
+	MemorySize int64
+	Uptime int32
+	NumNics int32
+	NumHBAs int32
+	PowerState string
+	Log        *object.DiagnosticLog
+	HostSystem *object.HostSystem
 }
 
 type VMInventory struct {
@@ -23,12 +31,16 @@ type VMInventory struct {
 	OS     string
 	IP     string
 	Status string
+	VM     types.ManagedObjectReference
 }
 
 type DiscoveryService struct {
 	client *govmomi.Client
 }
 
+type MetricsService struct {
+	client *govmomi.Client
+}
 type VCClient struct {
 	Address  string
 	Username string

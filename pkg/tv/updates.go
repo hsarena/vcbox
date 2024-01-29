@@ -21,7 +21,7 @@ func (ui *UI) updateDatacenterList() {
 func (ui *UI) updateComputeResourceList() {
 	ui.side.hosts.Clear()
 	for _, cr := range ui.inventory[ui.selectedDc].Hosts {
-		ui.side.hosts.AddItem(cr.ComputeResource.Name(), "", 0, nil)
+		ui.side.hosts.AddItem(cr.HostSystem.Name(), "", 0, nil)
 	}
 
 }

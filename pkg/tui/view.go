@@ -14,15 +14,13 @@ func (m model) View() string {
 	switch m.state {
 
 	case showDatacenterView:
-		detail = m.bd.View(common.ShowDetail, m.height)
+		detail = m.bd.View(common.ShowMetric, m.height)
 	case showHostView:
-		detail = m.bh.View(common.ShowDetail, m.height)
+		detail = m.bh.View(common.ShowMetric, m.height)
 	case showVMView:
-		detail = m.bv.View(common.ShowDetail, m.height)
+		detail = m.bv.View(common.ShowMetric, m.height)
 	default:
 		detail = m.bd.View(common.ShowFull, m.height)
 	}
-
-	return lipgloss.JoinHorizontal(lipgloss.Top, side, detail)
-	//detail = m.bd.View(false) + m.bh.View(false) + m.bv.View(false)
+	return lipgloss.JoinHorizontal(lipgloss.Top, side, "    ", detail)
 }

@@ -1,15 +1,19 @@
 package datacenter
 
 import (
+	"log"
+
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/viewport"
 	"github.com/hsarena/vcbox/pkg/vmware"
+	"github.com/vmware/govmomi/vim25/types"
 )
 
 type item struct {
 	name       string
 	totalVMs   int
 	totalHosts int
+	obj     types.ManagedObjectReference
 }
 
 func (i item) Name() string        { return i.name }
@@ -20,20 +24,21 @@ func (i item) FilterValue() string { return i.name }
 type BubbleDatacenter struct {
 	list     list.Model
 	viewport viewport.Model
+	metrics  *vmware.MetricsService
 }
 
 func NewBubbleDatacenter(l list.Model) BubbleDatacenter {
 	return BubbleDatacenter{list: l}
 }
 
-func InitialModel(inventory []vmware.Inventory) BubbleDatacenter {
+func InitialModel(inventory []vmware.Inventory, metrics *vmware.MetricsService) BubbleDatacenter {
 	items := dcToItem(inventory)
 	l := list.New(items, dcItemDelegate{}, 0, 0)
 	l.Title = "Datacenters"
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
 
-	return BubbleDatacenter{list: l}
+	return BubbleDatacenter{list: l, metrics: metrics}
 }
 
 func dcToItem(dcs []vmware.Inventory) []list.Item {
@@ -43,6 +48,7 @@ func dcToItem(dcs []vmware.Inventory) []list.Item {
 			name:       d.Datacenter.Name(),
 			totalVMs:   len(d.VMs),
 			totalHosts: len(d.Hosts),
+			obj:  d.Datacenter.Reference(),
 		}
 	}
 

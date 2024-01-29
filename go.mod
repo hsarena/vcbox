@@ -7,10 +7,12 @@ require (
 	github.com/charmbracelet/bubbletea v0.25.0
 	github.com/charmbracelet/lipgloss v0.9.1
 	github.com/gdamore/tcell/v2 v2.6.1-0.20231203215052-2917c3801e73
+	github.com/guptarohit/asciigraph v0.5.6
 	github.com/muesli/reflow v0.3.0
 	github.com/spf13/cobra v1.8.0
 	github.com/vmware/govmomi v0.34.1
 	golang.org/x/crypto v0.6.0
+	golang.org/x/text v0.12.0
 )
 
 require (
@@ -30,7 +32,6 @@ require (
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/term v0.9.0 // indirect
-	golang.org/x/text v0.12.0 // indirect
 )
 
 require (

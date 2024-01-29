@@ -24,6 +24,20 @@ func NewVMInventory(vmo mo.VirtualMachine) *VMInventory {
 		OS:     vmo.Guest.GuestFullName,
 		IP:     vmo.Guest.IpAddress,
 		Status: string(vmo.Summary.Runtime.PowerState),
+		VM:     vmo.Self,
+	}
+}
+
+func NewHostInventory(hmo mo.HostSystem) *HostInventory {
+
+	return &HostInventory{
+		CpuModel: hmo.Summary.Hardware.CpuModel,
+		NumCpuCores: hmo.Summary.Hardware.NumCpuCores,
+		MemorySize: hmo.Summary.Hardware.MemorySize,
+		Uptime: hmo.Summary.QuickStats.Uptime,
+		NumNics: hmo.Summary.Hardware.NumNics,
+		NumHBAs: hmo.Summary.Hardware.NumHBAs,
+		PowerState: string(hmo.Summary.Runtime.PowerState),
 	}
 }
 
@@ -61,6 +75,24 @@ func (d *DiscoveryService) DiscoverComputeResource(dc *object.Datacenter) ([]*ob
 		return nil, fmt.Errorf("failed to discover hosts: %v", err)
 	}
 	return crs, err
+}
+
+// DiscoverComputeResource retrieves a list of compute resources.
+func (d *DiscoveryService) DiscoverHostSystem(dc *object.Datacenter) ([]*object.HostSystem, error) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if dc == nil {
+		return nil, fmt.Errorf("the datacenter is nil")
+	}
+
+	finder := find.NewFinder(d.client.Client, true)
+	finder.SetDatacenter(dc)
+	hosts, err := finder.HostSystemList(ctx, "*")
+	if err != nil {
+		return nil, fmt.Errorf("failed to discover hosts: %v", err)
+	}
+	return hosts, err
 }
 
 // DiscoverVMsInsideDC retrieves a list of VMs inside a datacenter.
@@ -110,16 +142,30 @@ func (d *DiscoveryService) DiscoverVMInventory(vm *object.VirtualMachine) (*VMIn
 	return NewVMInventory(vmMo), nil
 }
 
-func (d *DiscoveryService) FetchHostLogs(cr *object.ComputeResource) (*object.DiagnosticLog, error) {
+// DiscoverVMInfo retrieves details of a VM.
+func (d *DiscoveryService) DiscoverHostInventory(host *object.HostSystem) (*HostInventory, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	hosts, err := cr.Hosts(ctx)
+
+	var hostMo mo.HostSystem
+
+	err := object.NewHostSystem(d.client.Client, host.Reference()).Properties(ctx, host.Reference(), []string{"summary", "runtime"}, &hostMo)
 	if err != nil {
-		log.Printf("%s", err.Error())
-		return nil, err
+		return nil, fmt.Errorf("failed to discover VM info for %s: %v", host.Name(), err)
 	}
+
+	if err != nil {
+		log.Printf("failed to discover VM Host info for %s: %v", host.Name(), err)
+	}
+	
+	return NewHostInventory(hostMo), nil
+}
+
+func (d *DiscoveryService) FetchHostLogs(host *object.HostSystem) (*object.DiagnosticLog, error) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	dLogM := object.NewDiagnosticManager(d.client.Client)
-	return dLogM.Log(ctx, hosts[0], defalutLogKey), nil
+	return dLogM.Log(ctx, host, defalutLogKey), nil
 }
 
 func (d *DiscoveryService) FetchInventory() ([]Inventory, error) {
@@ -131,15 +177,21 @@ func (d *DiscoveryService) FetchInventory() ([]Inventory, error) {
 	in := make([]Inventory, len(dcD))
 	for i, dc := range dcD {
 		in[i].Datacenter = dc
-		crD, err := d.DiscoverComputeResource(dc)
+		hostD, err := d.DiscoverHostSystem(dc)
 		if err != nil {
 			log.Printf("%s", err.Error())
 			return nil, err
 		}
-		hostI := make([]HostInventory, len(crD))
-		for i, c := range crD {
-			hostI[i].ComputeResource = c
-			hostI[i].Log, err = d.FetchHostLogs(c)
+		hostI := make([]HostInventory, len(hostD))
+		for i, h := range hostD {
+			host, err := d.DiscoverHostInventory(h)
+			if err != nil {
+				log.Printf("%s", err.Error())
+				return nil, err
+			}
+			hostI[i] = *host
+			hostI[i].HostSystem = h
+			hostI[i].Log, err = d.FetchHostLogs(h)
 			if err != nil {
 				log.Printf("%s", err.Error())
 				return nil, err

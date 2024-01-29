@@ -4,6 +4,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/viewport"
 	"github.com/hsarena/vcbox/pkg/vmware"
+	"github.com/vmware/govmomi/vim25/types"
 )
 
 type item struct {
@@ -13,6 +14,7 @@ type item struct {
 	os     string
 	ip     string
 	status string
+	vm     types.ManagedObjectReference
 }
 
 func (i item) Name() string        { return i.name }
@@ -22,19 +24,20 @@ func (i item) FilterValue() string { return i.name }
 type BubbleVM struct {
 	list     list.Model
 	viewport viewport.Model
+	metrics  *vmware.MetricsService
 }
 
 func NewBubbleVM(l list.Model) BubbleVM {
 	return BubbleVM{list: l}
 }
 
-func InitialModel(inventory []vmware.VMInventory) BubbleVM {
+func InitialModel(inventory []vmware.VMInventory, metrics *vmware.MetricsService) BubbleVM {
 	items := vmToItem(inventory)
 	l := list.New(items, vmItemDelegate{}, 0, 0)
 	l.Title = "VirtualMachines"
 	l.SetShowHelp(true)
 	l.SetShowStatusBar(true)
-	return BubbleVM{list: l}
+	return BubbleVM{list: l, metrics: metrics}
 }
 
 func vmToItem(vms []vmware.VMInventory) []list.Item {
@@ -43,10 +46,11 @@ func vmToItem(vms []vmware.VMInventory) []list.Item {
 		items[i] = item{
 			name:   v.Name,
 			cpu:    v.CPU,
-			memory: v.Memory,
+			memory: v.Memory/1024,
 			os:     v.OS,
 			ip:     v.IP,
 			status: v.Status,
+			vm:     v.VM,
 		}
 	}
 	return items
