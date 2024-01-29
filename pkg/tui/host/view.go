@@ -14,17 +14,20 @@ import (
 	"github.com/muesli/reflow/wordwrap"
 )
 
-func (bd BubbleHost) View(svt common.ShowViewType, height int) string {
+func (bh BubbleHost) View(svt common.ShowViewType, height int) string {
 	switch svt {
 	case common.ShowList:
-		return bd.listView(height)
+		return bh.listView(height)
 	case common.ShowDetail:
-		//return bd.logView()
-		return bd.metricsView()
+		return ""
+	case common.ShowLog:
+		return bh.logView()
+	case common.ShowMetric:
+		return bh.metricsView()
 	case common.ShowFull:
-		return bd.fullView(height)
+		return bh.fullView(height)
 	default:
-		return bd.fullView(height)
+		return bh.fullView(height)
 	}
 }
 
@@ -86,8 +89,7 @@ func (bh BubbleHost) metricsView() string {
 		builder.WriteString(metricsHeader)
 		builder.WriteString("\n\n")
 		for i, x := range hostMetrics {
-			vf64 := util.ToF64(x.Value)
-			graph = append(graph, asciigraph.Plot(vf64, asciigraph.SeriesColors(asciigraph.DarkGoldenrod),
+			graph = append(graph, asciigraph.Plot(x, asciigraph.SeriesColors(asciigraph.DarkGoldenrod),
 				asciigraph.AxisColor(asciigraph.IndianRed),
 				asciigraph.Height(bh.viewport.Height/3),
 				asciigraph.Width(bh.viewport.Width/3),
@@ -107,12 +109,11 @@ func renderHostDetails(i item) string {
 	uptime := fmt.Sprintf("\tUptime: %v days",i.uptime)
 	powerState := fmt.Sprintf("\tStatus: %v",i.powerState)
 	cpuModel := fmt.Sprintf("\nCPU Model: %v",i.cpuModel)
-	numCpuCores := fmt.Sprintf("\tCPU Cores: %v",i.numCpuCores)
-	memorySize := fmt.Sprintf("\nMemory: %vGB",i.memorySize)
+	memorySize := fmt.Sprintf("\tMemory: %vGB",i.memorySize)
+	numCpuCores := fmt.Sprintf("\nCPU Cores: %v",i.numCpuCores)
 	numNics := fmt.Sprintf("\tNics: %v",i.numNics)
 	numHBAs := fmt.Sprintf("\tHBAs: %v",i.numHBAs)
-	thostMaxVirtualDiskCapacity := fmt.Sprintf("\nhostMaxVirtualDiskCapacity: %vTB",i.hostMaxVirtualDiskCapacity)
-	return hostName + uptime + powerState + cpuModel + numCpuCores + memorySize + numNics + numHBAs + thostMaxVirtualDiskCapacity
+	return hostName + uptime + powerState + cpuModel + memorySize + numCpuCores + numNics + numHBAs
 }
 
 func renderHostLog(i item) string {

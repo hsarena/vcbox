@@ -17,7 +17,10 @@ func (bv BubbleVM) View(svt common.ShowViewType, height int) string {
 	case common.ShowList:
 		return bv.listView(height)
 	case common.ShowDetail:
-		//return bv.detailView()
+		return bv.detailView()
+	case common.ShowLog:
+		return ""
+	case common.ShowMetric:
 		return bv.metricsView()
 	case common.ShowFull:
 		return bv.fullView(height)
@@ -76,8 +79,7 @@ func (bv BubbleVM) metricsView() string {
 		builder.WriteString(metricsHeader)
 		builder.WriteString("\n\n")
 		for i, x := range vmMetrics {
-			vf64 := util.ToF64(x.Value)
-			graph = append(graph, asciigraph.Plot(vf64, asciigraph.SeriesColors(asciigraph.DarkGoldenrod),
+			graph = append(graph, asciigraph.Plot(x, asciigraph.SeriesColors(asciigraph.DarkGoldenrod),
 			asciigraph.AxisColor(asciigraph.IndianRed),
 			asciigraph.Height(bv.viewport.Height/5),
 			asciigraph.Width(bv.viewport.Width/5),

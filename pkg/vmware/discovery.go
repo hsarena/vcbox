@@ -37,7 +37,6 @@ func NewHostInventory(hmo mo.HostSystem) *HostInventory {
 		Uptime: hmo.Summary.QuickStats.Uptime,
 		NumNics: hmo.Summary.Hardware.NumNics,
 		NumHBAs: hmo.Summary.Hardware.NumHBAs,
-		HostMaxVirtualDiskCapacity: hmo.Runtime.HostMaxVirtualDiskCapacity,
 		PowerState: string(hmo.Summary.Runtime.PowerState),
 	}
 }

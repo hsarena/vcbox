@@ -19,7 +19,6 @@ type HostInventory struct {
 	Uptime int32
 	NumNics int32
 	NumHBAs int32
-	HostMaxVirtualDiskCapacity int64
 	PowerState string
 	Log        *object.DiagnosticLog
 	HostSystem *object.HostSystem

@@ -32,7 +32,6 @@ func NewBubbleDatacenter(l list.Model) BubbleDatacenter {
 }
 
 func InitialModel(inventory []vmware.Inventory, metrics *vmware.MetricsService) BubbleDatacenter {
-	log.Println("about to initialize datacenter model")
 	items := dcToItem(inventory)
 	l := list.New(items, dcItemDelegate{}, 0, 0)
 	l.Title = "Datacenters"

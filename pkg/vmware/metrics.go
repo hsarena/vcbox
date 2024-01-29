@@ -3,24 +3,22 @@ package vmware
 import (
 	"context"
 	"flag"
-	"log"
+	"fmt"
 
-	// "fmt"
-
+	"github.com/hsarena/vcbox/pkg/util"
 	"github.com/vmware/govmomi"
-	// "github.com/vmware/govmomi/object"
 	"github.com/vmware/govmomi/performance"
 	"github.com/vmware/govmomi/view"
 	"github.com/vmware/govmomi/vim25/types"
 )
 
-var interval = flag.Int("i", 300, "Interval ID")
+var interval = flag.Int("i", 3600, "Interval ID")
 
 func NewMetricsService(client *govmomi.Client) *MetricsService {
 	return &MetricsService{client: client}
 }
 
-func (m *MetricsService) FetchMetrics(obj types.ManagedObjectReference, metrics []string) (mapd map[string]performance.MetricSeries, err error) {
+func (m *MetricsService) FetchMetrics(obj types.ManagedObjectReference, metrics []string) (mms map[string][]float64, err error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	// Get virtual machines references
@@ -37,27 +35,15 @@ func (m *MetricsService) FetchMetrics(obj types.ManagedObjectReference, metrics 
 	perfManager := performance.NewManager(m.client.Client)
 
 	// Retrieve counters name list
-	// counters, err := perfManager.CounterInfoByName(ctx)
-	// if err != nil {
-	// 	return nil,err
-	// }
-	// //var names []string
-	// names := []string{
-	// // "cpu.usage.average",
-	// // "net.usage.average",
-	// // "disk.write.average",
-	// // "disk.read.average",
-	// // "mem.usage.average",
-	// "cpu.usagemhz.average",
-	// "mem.overhead.average"}
+	counters, err := perfManager.CounterInfoByName(ctx)
+	if err != nil {
+		return nil,err
+	}
 
-	// // for name := range counters {
-	// // 	names = append(names, name)
-	// // }
 	// Create PerfQuerySpec
 	spec := types.PerfQuerySpec{
 		Entity:     obj,
-		MaxSample:  30,
+		MaxSample:  24,
 		MetricId:   []types.PerfMetricId{{Instance: "*"}},
 		IntervalId: int32(*interval),
 	}
@@ -72,31 +58,41 @@ func (m *MetricsService) FetchMetrics(obj types.ManagedObjectReference, metrics 
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("the result metrics is: %v", result)
 	// Read result
-	mapd = make(map[string]performance.MetricSeries, len(result))
+	var (
+		metricStr string
+		name string
+		value []float64
+	)
+	mms = make(map[string][]float64, len(result))
 	for _, metric := range result {
-		// // name := metric.Entity
-		// vm := object.NewHostSystem(m.client.Client, metric.Entity)
-		// name, err := vm.ObjectName(ctx)
-		// if err != nil {
-		// 	return nil, err
-		// }
 		for _, v := range metric.Value {
-			// counter := counters[v.Name]
-			// units := counter.UnitInfo.GetElementDescription().Label
+			counter := counters[v.Name]
+			units := counter.UnitInfo.GetElementDescription().Label
 
-			// instance := v.Instance
-			// if instance == "" {
-			// 	instance = "-"
-			// }
-			// log.Println("about to create mapd")
 			if len(v.Value) != 0 {
-				// str += fmt.Sprintf("%s\t%s\t%s\n",
-				// 	v.Name, v.ValueCSV(), units)
-				mapd[v.Name] = v
+				metricStr += fmt.Sprintf("\n ---| %s\t%s\t%s\n",
+					v.Name, v.ValueCSV(), units)
+				switch units {
+				case "MHz":
+					name = fmt.Sprintf("%s|%s", v.Name, "GHz")
+					value = util.ToF64(v.Value,1024)
+				case "KB":
+					name = fmt.Sprintf("%s|%s", v.Name, "GB")
+					value = util.ToF64(v.Value, 1024*1024)
+				case "%":
+					name = fmt.Sprintf("%s|%s", v.Name, units)
+					value = util.ToF64(v.Value,100)
+				case "num":
+					name = fmt.Sprintf("%s|%s", v.Name, units)
+					value = util.ToF64(v.Value,1)
+				case "KBps":
+					name = fmt.Sprintf("%s|%s", v.Name, "MBps")
+					value = util.ToF64(v.Value,1024)	
+				}
+				mms[name] = value
 			}
 		}
 	}
-	return mapd, nil
+	return mms, nil
 }

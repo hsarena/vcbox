@@ -16,7 +16,6 @@ type item struct {
 	uptime int32
 	numNics int32
 	numHBAs int32
-	hostMaxVirtualDiskCapacity int64
 	powerState string
 	logs *object.DiagnosticLog
 	obj  types.ManagedObjectReference
@@ -57,7 +56,6 @@ func hostToItem(hosts []vmware.HostInventory) []list.Item {
 			uptime: h.Uptime/60/60/24,
 			numNics: h.NumNics,
 			numHBAs: h.NumHBAs,
-			hostMaxVirtualDiskCapacity: h.HostMaxVirtualDiskCapacity/1024/1024/1024/1024,
 			powerState: h.PowerState,
 		}
 	}

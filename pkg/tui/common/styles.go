@@ -7,6 +7,8 @@ type ShowViewType int
 const (
 	ShowList ShowViewType = iota
 	ShowDetail
+	ShowMetric
+	ShowLog
 	ShowFull
 )
 
@@ -15,12 +17,11 @@ var (
 			Width(30).
 			PaddingRight(1).
 			MarginRight(1).
-			Border(lipgloss.ThickBorder()).
+			Border(lipgloss.NormalBorder()).
 			BorderForeground(lipgloss.Color("#f56642"))
 	ListColorStyle = lipgloss.NewStyle().
 			Background(lipgloss.NoColor{}).
-			Foreground(lipgloss.Color("#00ffa2")).
-			Underline(true)
+			Foreground(lipgloss.Color("#00ffa2"))
 	ListItemStyle = lipgloss.NewStyle().
 			PaddingLeft(4)
 	ListSelectedListItemStyle = lipgloss.NewStyle().
