@@ -12,7 +12,7 @@ import (
 	"github.com/vmware/govmomi/vim25/types"
 )
 
-var interval = flag.Int("i", 3600, "Interval ID")
+var interval = flag.Int("i", 300, "Interval ID")
 
 func NewMetricsService(client *govmomi.Client) *MetricsService {
 	return &MetricsService{client: client}
@@ -37,7 +37,7 @@ func (m *MetricsService) FetchMetrics(obj types.ManagedObjectReference, metrics 
 	// Retrieve counters name list
 	counters, err := perfManager.CounterInfoByName(ctx)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	// Create PerfQuerySpec
@@ -61,8 +61,8 @@ func (m *MetricsService) FetchMetrics(obj types.ManagedObjectReference, metrics 
 	// Read result
 	var (
 		metricStr string
-		name string
-		value []float64
+		name      string
+		value     []float64
 	)
 	mms = make(map[string][]float64, len(result))
 	for _, metric := range result {
@@ -76,19 +76,19 @@ func (m *MetricsService) FetchMetrics(obj types.ManagedObjectReference, metrics 
 				switch units {
 				case "MHz":
 					name = fmt.Sprintf("%s|%s", v.Name, "GHz")
-					value = util.ToF64(v.Value,1024)
+					value = util.ToF64(v.Value, 1024)
 				case "KB":
 					name = fmt.Sprintf("%s|%s", v.Name, "GB")
 					value = util.ToF64(v.Value, 1024*1024)
 				case "%":
 					name = fmt.Sprintf("%s|%s", v.Name, units)
-					value = util.ToF64(v.Value,100)
+					value = util.ToF64(v.Value, 100)
 				case "num":
 					name = fmt.Sprintf("%s|%s", v.Name, units)
-					value = util.ToF64(v.Value,1)
+					value = util.ToF64(v.Value, 1)
 				case "KBps":
 					name = fmt.Sprintf("%s|%s", v.Name, "MBps")
-					value = util.ToF64(v.Value,1024)	
+					value = util.ToF64(v.Value, 1024)
 				}
 				mms[name] = value
 			}

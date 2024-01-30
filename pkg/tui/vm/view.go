@@ -29,6 +29,15 @@ func (bv BubbleVM) View(svt common.ShowViewType, height int) string {
 	}
 }
 
+func (bv BubbleVM) Tab() []common.Tab {
+	tab := make([]common.Tab, 2)
+	tab[0].Name = "details"
+	tab[0].Content = bv.detailView()
+	tab[1].Name = "metrics"
+	tab[1].Content = bv.metricsView()
+	return tab
+}
+
 func (bv BubbleVM) fullView(height int) string {
 	//bv.viewport.SetContent(bv.detailView())
 	bv.viewport.SetContent(bv.metricsView())
@@ -40,7 +49,7 @@ func (bv BubbleVM) listView(height int) string {
 	bv.list.Styles.Title = common.ListColorStyle
 	bv.list.Styles.FilterPrompt.Foreground(common.ListColorStyle.GetBackground())
 	bv.list.Styles.FilterCursor.Foreground(common.ListColorStyle.GetBackground())
-	bv.list.SetHeight(5 * height/9 + height/27 + height/81)
+	bv.list.SetHeight(5*height/9 + height/27 + height/81)
 	return common.ListStyle.Render(bv.list.View())
 }
 
@@ -80,18 +89,16 @@ func (bv BubbleVM) metricsView() string {
 		builder.WriteString("\n\n")
 		for i, x := range vmMetrics {
 			graph = append(graph, asciigraph.Plot(x, asciigraph.SeriesColors(asciigraph.DarkGoldenrod),
-			asciigraph.AxisColor(asciigraph.IndianRed),
-			asciigraph.Height(bv.viewport.Height/5),
-			asciigraph.Width(bv.viewport.Width/5),
-			asciigraph.Caption(util.MetricIdToString(i)),
-			asciigraph.Offset(5)))
+				asciigraph.AxisColor(asciigraph.IndianRed),
+				asciigraph.Height(bv.viewport.Height/6),
+				asciigraph.Width(bv.viewport.Width/6),
+				asciigraph.Caption(util.MetricIdToString(i)),
+				asciigraph.Offset(5)))
 		}
-		
+
 		builder.WriteString(lipgloss.JoinVertical(lipgloss.Top,
 			lipgloss.JoinHorizontal(lipgloss.Top, graph[:len(graph)/2]...), "\n\n\n",
 			lipgloss.JoinHorizontal(lipgloss.Top, graph[len(graph)/2:]...)))
-		
-		
 
 	}
 	details := wordwrap.String(builder.String(), bv.viewport.Width)

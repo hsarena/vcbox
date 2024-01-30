@@ -9,16 +9,16 @@ import (
 )
 
 type item struct {
-	name string
-	cpuModel string
+	name        string
+	cpuModel    string
 	numCpuCores int16
-	memorySize int64
-	uptime int32
-	numNics int32
-	numHBAs int32
-	powerState string
-	logs *object.DiagnosticLog
-	obj  types.ManagedObjectReference
+	memorySize  int64
+	uptime      int32
+	numNics     int32
+	numHBAs     int32
+	powerState  string
+	logs        *object.DiagnosticLog
+	obj         types.ManagedObjectReference
 }
 
 func (i item) Name() string        { return i.name }
@@ -47,16 +47,16 @@ func hostToItem(hosts []vmware.HostInventory) []list.Item {
 	items := make([]list.Item, len(hosts))
 	for i, h := range hosts {
 		items[i] = item{
-			name: h.HostSystem.Name(),
-			obj:  h.HostSystem.Reference(),
-			logs: h.Log,
-			cpuModel: h.CpuModel,
+			name:        h.HostSystem.Name(),
+			obj:         h.HostSystem.Reference(),
+			logs:        h.Log,
+			cpuModel:    h.CpuModel,
 			numCpuCores: h.NumCpuCores,
-			memorySize: h.MemorySize/1024/1024/1024,
-			uptime: h.Uptime/60/60/24,
-			numNics: h.NumNics,
-			numHBAs: h.NumHBAs,
-			powerState: h.PowerState,
+			memorySize:  h.MemorySize / 1024 / 1024 / 1024,
+			uptime:      h.Uptime / 60 / 60 / 24,
+			numNics:     h.NumNics,
+			numHBAs:     h.NumHBAs,
+			powerState:  h.PowerState,
 		}
 	}
 
