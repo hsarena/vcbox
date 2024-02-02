@@ -4,7 +4,6 @@ import (
 	"log"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/hsarena/vcbox/pkg/util"
 )
 
 type state int
@@ -28,10 +27,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "right", "l", "n":
 			log.Printf("about to turn right: %v, %v", m.activeTab, len(m.tabs))
-			m.activeTab = util.Min(m.activeTab+1, len(m.tabs)-1)
+			m.activeTab = min(m.activeTab+1, len(m.tabs)-1)
 			return m, nil
 		case "left", "h", "p":
-			m.activeTab = util.Max(m.activeTab-1, 0)
+			m.activeTab = max(m.activeTab-1, 0)
 			return m, nil
 		case "tab":
 			return updateByState(m)

@@ -52,26 +52,3 @@ func dcToItem(dcs []vmware.Inventory) []list.Item {
 
 	return items
 }
-
-func MockInitialModel(inventory []vmware.MockInventory) BubbleDatacenter {
-	items := mockDCToItem(inventory)
-	l := list.New(items, dcItemDelegate{}, 0, 0)
-	l.Title = "Datacenters"
-	l.SetShowHelp(false)
-	l.SetShowStatusBar(false)
-
-	return BubbleDatacenter{list: l}
-}
-
-func mockDCToItem(dcs []vmware.MockInventory) []list.Item {
-	items := make([]list.Item, len(dcs))
-	for i, d := range dcs {
-		items[i] = item{
-			name:       d.Datacenter,
-			totalVMs:   len(d.VMs),
-			totalHosts: len(d.Hosts),
-		}
-	}
-
-	return items
-}

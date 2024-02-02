@@ -11,11 +11,9 @@ import (
 
 	"github.com/vmware/govmomi"
 
-	"github.com/hsarena/vcbox/pkg/mock"
 	"github.com/hsarena/vcbox/pkg/ssh"
 	"github.com/hsarena/vcbox/pkg/tui"
 	"github.com/hsarena/vcbox/pkg/tv"
-	"github.com/hsarena/vcbox/pkg/util"
 	"github.com/hsarena/vcbox/pkg/vmware"
 )
 
@@ -24,7 +22,6 @@ type uiMode int
 var (
 	vcc vmware.VCClient
 	sc  ssh.SSHClient
-	mck bool
 	uim uiMode = teaUI
 )
 
@@ -38,40 +35,32 @@ var rootCmd = &cobra.Command{
 	Use:   "vcbox",
 	Short: "VMware vCenter Text User Interface as a Box",
 	Run: func(cmd *cobra.Command, args []string) {
-		util.SetMock(mck)
-		isMock := util.IsMock()
-		if isMock {
-			if _, err := tea.NewProgram(mock.InitialModel(), tea.WithAltScreen()).Run(); err != nil {
+
+		u, err := vmware.ParseCredentials(&vcc)
+		if err != nil {
+			log.Printf("%s", err.Error())
+		}
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		c, err := govmomi.NewClient(ctx, u, vcc.Insecure)
+		if err != nil {
+			log.Printf("%s", err.Error())
+		}
+		switch uim {
+		case tvUI:
+			if err := tv.NewUI(c).Run(); err != nil {
+				panic(err)
+			}
+		case teaUI:
+			if _, err := tea.NewProgram(tui.InitialModel(c), tea.WithAltScreen()).Run(); err != nil {
 				log.Println("Error running program:", err)
 				os.Exit(1)
 			}
-		} else {
-			u, err := vmware.ParseCredentials(&vcc)
-			if err != nil {
-				log.Printf("%s", err.Error())
-			}
-
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
-
-			c, err := govmomi.NewClient(ctx, u, vcc.Insecure)
-			if err != nil {
-				log.Printf("%s", err.Error())
-			}
-			switch uim {
-			case tvUI:
-				if err := tv.NewUI(c).Run(); err != nil {
-					panic(err)
-				}
-			case teaUI:
-				if _, err := tea.NewProgram(tui.InitialModel(c), tea.WithAltScreen()).Run(); err != nil {
-					log.Println("Error running program:", err)
-					os.Exit(1)
-				}
-			}
-
-			defer c.Logout(ctx)
 		}
+
+		defer c.Logout(ctx)
 
 	},
 }
@@ -96,5 +85,4 @@ func init() {
 	rootCmd.Flags().StringVar(&vcc.Password, "password", os.Getenv("VCPASS"), "The Password of VMware vCenter server")
 	rootCmd.Flags().BoolVar(&vcc.Insecure, "insecure", boolVar, "Ignoring the secure connection")
 	rootCmd.Flags().StringVar(&sc.Username, "remote-user", os.Getenv("VCBOX_REMOTE_USER"), "The defualt remote user")
-	rootCmd.Flags().BoolVar(&mck, "mock", false, "Running app with mock data")
 }

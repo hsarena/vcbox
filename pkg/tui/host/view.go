@@ -68,11 +68,7 @@ func (bh BubbleHost) logView() string {
 		builder.WriteString(divider)
 		builder.WriteString(logHeader)
 		builder.WriteString("\n\n")
-		if util.IsMock() {
-			builder.WriteString(fmt.Sprintf("This is the log of host[%s]", it.(item).name))
-		} else {
-			builder.WriteString(renderHostLog(it.(item)))
-		}
+		builder.WriteString(renderHostLog(it.(item)))
 	}
 	details := wordwrap.String(builder.String(), bh.viewport.Width)
 

@@ -35,15 +35,3 @@ func (bv BubbleVM) UpdateList(inventory []vmware.VMInventory, msg tea.Msg) (Bubb
 	}
 	return bv, bv.list.SetItems(vmToItem(inventory))
 }
-
-func (bv BubbleVM) MockUpdateList(inventory []vmware.MockVMInventory, msg tea.Msg) (BubbleVM, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		horizontal, vertical := common.ListStyle.GetFrameSize()
-		paginatorHeight := lipgloss.Height(bv.list.Paginator.View())
-		bv.list.SetSize(msg.Width-horizontal, msg.Height/2-vertical-paginatorHeight)
-		bv.viewport = viewport.New(msg.Width, msg.Height)
-		bv.viewport.SetContent(bv.detailView())
-	}
-	return bv, bv.list.SetItems(mockVMToItem(inventory))
-}
