@@ -31,13 +31,13 @@ func NewVMInventory(vmo mo.VirtualMachine) *VMInventory {
 func NewHostInventory(hmo mo.HostSystem) *HostInventory {
 
 	return &HostInventory{
-		CpuModel: hmo.Summary.Hardware.CpuModel,
+		CpuModel:    hmo.Summary.Hardware.CpuModel,
 		NumCpuCores: hmo.Summary.Hardware.NumCpuCores,
-		MemorySize: hmo.Summary.Hardware.MemorySize,
-		Uptime: hmo.Summary.QuickStats.Uptime,
-		NumNics: hmo.Summary.Hardware.NumNics,
-		NumHBAs: hmo.Summary.Hardware.NumHBAs,
-		PowerState: string(hmo.Summary.Runtime.PowerState),
+		MemorySize:  hmo.Summary.Hardware.MemorySize,
+		Uptime:      hmo.Summary.QuickStats.Uptime,
+		NumNics:     hmo.Summary.Hardware.NumNics,
+		NumHBAs:     hmo.Summary.Hardware.NumHBAs,
+		PowerState:  string(hmo.Summary.Runtime.PowerState),
 	}
 }
 
@@ -157,7 +157,7 @@ func (d *DiscoveryService) DiscoverHostInventory(host *object.HostSystem) (*Host
 	if err != nil {
 		log.Printf("failed to discover VM Host info for %s: %v", host.Name(), err)
 	}
-	
+
 	return NewHostInventory(hostMo), nil
 }
 

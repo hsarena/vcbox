@@ -1,6 +1,10 @@
 package tui
 
-import tea "github.com/charmbracelet/bubbletea"
+import (
+	"log"
+
+	tea "github.com/charmbracelet/bubbletea"
+)
 
 type state int
 
@@ -18,10 +22,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 	case tea.KeyMsg:
-		if msg.String() == "ctrl+c" {
+		switch keypress := msg.String(); keypress {
+		case "ctrl+c", "q":
 			return m, tea.Quit
-		}
-		if msg.String() == "tab" {
+		case "right", "l", "n":
+			log.Printf("about to turn right: %v, %v", m.activeTab, len(m.tabs))
+			m.activeTab = min(m.activeTab+1, len(m.tabs)-1)
+			return m, nil
+		case "left", "h", "p":
+			m.activeTab = max(m.activeTab-1, 0)
+			return m, nil
+		case "tab":
 			return updateByState(m)
 		}
 	}

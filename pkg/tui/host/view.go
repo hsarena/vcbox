@@ -31,6 +31,15 @@ func (bh BubbleHost) View(svt common.ShowViewType, height int) string {
 	}
 }
 
+func (bh BubbleHost) Tab() []common.Tab {
+	tab := make([]common.Tab, 2)
+	tab[0].Name = "logs"
+	tab[0].Content = bh.logView()
+	tab[1].Name = "metrics"
+	tab[1].Content = bh.metricsView()
+	return tab
+}
+
 func (bh BubbleHost) fullView(height int) string {
 	bh.viewport.SetContent(bh.metricsView())
 	//bh.viewport.SetContent(bh.logView())
@@ -59,11 +68,7 @@ func (bh BubbleHost) logView() string {
 		builder.WriteString(divider)
 		builder.WriteString(logHeader)
 		builder.WriteString("\n\n")
-		if util.IsMock() {
-			builder.WriteString(fmt.Sprintf("This is the log of host[%s]", it.(item).name))
-		} else {
-			builder.WriteString(renderHostLog(it.(item)))
-		}
+		builder.WriteString(renderHostLog(it.(item)))
 	}
 	details := wordwrap.String(builder.String(), bh.viewport.Width)
 
@@ -91,8 +96,8 @@ func (bh BubbleHost) metricsView() string {
 		for i, x := range hostMetrics {
 			graph = append(graph, asciigraph.Plot(x, asciigraph.SeriesColors(asciigraph.DarkGoldenrod),
 				asciigraph.AxisColor(asciigraph.IndianRed),
-				asciigraph.Height(bh.viewport.Height/3),
-				asciigraph.Width(bh.viewport.Width/3),
+				asciigraph.Height(bh.viewport.Height/6),
+				asciigraph.Width(bh.viewport.Width/6),
 				asciigraph.Caption(util.MetricIdToString(i)),
 				asciigraph.Offset(2)))
 		}
@@ -106,13 +111,13 @@ func (bh BubbleHost) metricsView() string {
 func renderHostDetails(i item) string {
 
 	hostName := fmt.Sprintf("Name: %s", i.name)
-	uptime := fmt.Sprintf("\tUptime: %v days",i.uptime)
-	powerState := fmt.Sprintf("\tStatus: %v",i.powerState)
-	cpuModel := fmt.Sprintf("\nCPU Model: %v",i.cpuModel)
-	memorySize := fmt.Sprintf("\tMemory: %vGB",i.memorySize)
-	numCpuCores := fmt.Sprintf("\nCPU Cores: %v",i.numCpuCores)
-	numNics := fmt.Sprintf("\tNics: %v",i.numNics)
-	numHBAs := fmt.Sprintf("\tHBAs: %v",i.numHBAs)
+	uptime := fmt.Sprintf("\tUptime: %v days", i.uptime)
+	powerState := fmt.Sprintf("\tStatus: %v", i.powerState)
+	cpuModel := fmt.Sprintf("\nCPU Model: %v", i.cpuModel)
+	memorySize := fmt.Sprintf("\tMemory: %vGB", i.memorySize)
+	numCpuCores := fmt.Sprintf("\nCPU Cores: %v", i.numCpuCores)
+	numNics := fmt.Sprintf("\tNics: %v", i.numNics)
+	numHBAs := fmt.Sprintf("\tHBAs: %v", i.numHBAs)
 	return hostName + uptime + powerState + cpuModel + memorySize + numCpuCores + numNics + numHBAs
 }
 

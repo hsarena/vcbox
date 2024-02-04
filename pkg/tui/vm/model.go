@@ -46,35 +46,11 @@ func vmToItem(vms []vmware.VMInventory) []list.Item {
 		items[i] = item{
 			name:   v.Name,
 			cpu:    v.CPU,
-			memory: v.Memory/1024,
+			memory: v.Memory / 1024,
 			os:     v.OS,
 			ip:     v.IP,
 			status: v.Status,
 			vm:     v.VM,
-		}
-	}
-	return items
-}
-
-func MockInitialModel(inventory []vmware.MockVMInventory) BubbleVM {
-	items := mockVMToItem(inventory)
-	l := list.New(items, vmItemDelegate{}, 0, 0)
-	l.Title = "Virtual Machines"
-	l.SetShowHelp(true)
-	l.SetShowStatusBar(true)
-	return BubbleVM{list: l}
-}
-
-func mockVMToItem(vms []vmware.MockVMInventory) []list.Item {
-	items := make([]list.Item, len(vms))
-	for i, v := range vms {
-		items[i] = item{
-			name:   v.Name,
-			cpu:    v.CPU,
-			memory: v.Memory,
-			os:     v.OS,
-			ip:     v.IP,
-			status: v.Status,
 		}
 	}
 	return items

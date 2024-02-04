@@ -29,6 +29,15 @@ func (bd BubbleDatacenter) View(svt common.ShowViewType, height int) string {
 	}
 }
 
+func (bd BubbleDatacenter) Tab() []common.Tab {
+	tab := make([]common.Tab, 2)
+	tab[0].Name = "details"
+	tab[0].Content = bd.detailView()
+	tab[1].Name = "metrics"
+	tab[1].Content = bd.metricsView()
+	return tab
+}
+
 func (bd BubbleDatacenter) fullView(height int) string {
 	bd.viewport.SetContent(bd.detailView())
 	return lipgloss.JoinHorizontal(
@@ -79,18 +88,16 @@ func (bd BubbleDatacenter) metricsView() string {
 		builder.WriteString("\n\n")
 		for i, x := range vmMetrics {
 			graph = append(graph, asciigraph.Plot(x, asciigraph.SeriesColors(asciigraph.DarkGoldenrod),
-			asciigraph.AxisColor(asciigraph.IndianRed),
-			asciigraph.Height(bd.viewport.Height/5),
-			asciigraph.Width(bd.viewport.Width/5),
-			asciigraph.Caption(util.MetricIdToString(i)),
-			asciigraph.Offset(5)))
+				asciigraph.AxisColor(asciigraph.IndianRed),
+				asciigraph.Height(bd.viewport.Height/6),
+				asciigraph.Width(bd.viewport.Width/6),
+				asciigraph.Caption(util.MetricIdToString(i)),
+				asciigraph.Offset(5)))
 		}
-		
+
 		builder.WriteString(lipgloss.JoinVertical(lipgloss.Top,
 			lipgloss.JoinHorizontal(lipgloss.Top, graph[:len(graph)/2]...), "\n\n\n",
 			lipgloss.JoinHorizontal(lipgloss.Top, graph[len(graph)/2:]...)))
-		
-		
 
 	}
 	details := wordwrap.String(builder.String(), bd.viewport.Width)

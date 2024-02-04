@@ -13,15 +13,15 @@ type Inventory struct {
 }
 
 type HostInventory struct {
-	CpuModel string
+	CpuModel    string
 	NumCpuCores int16
-	MemorySize int64
-	Uptime int32
-	NumNics int32
-	NumHBAs int32
-	PowerState string
-	Log        *object.DiagnosticLog
-	HostSystem *object.HostSystem
+	MemorySize  int64
+	Uptime      int32
+	NumNics     int32
+	NumHBAs     int32
+	PowerState  string
+	Log         *object.DiagnosticLog
+	HostSystem  *object.HostSystem
 }
 
 type VMInventory struct {
