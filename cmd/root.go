@@ -54,7 +54,7 @@ var rootCmd = &cobra.Command{
 				panic(err)
 			}
 		case teaUI:
-			if _, err := tea.NewProgram(tui.InitialModel(c), tea.WithAltScreen()).Run(); err != nil {
+			if _, err := tea.NewProgram(tui.InitModel(c), tea.WithAltScreen()).Run(); err != nil {
 				log.Println("Error running program:", err)
 				os.Exit(1)
 			}
