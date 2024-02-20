@@ -1,14 +1,17 @@
 package tui
 
 import (
+	"log"
+
+	"github.com/charmbracelet/bubbles/viewport"
 	"github.com/hsarena/vcbox/pkg/tui/side"
 	"github.com/hsarena/vcbox/pkg/vmware"
 	"github.com/vmware/govmomi"
-	"log"
 )
 
 type Model struct {
 	side      side.Model
+	header    viewport.Model
 	inventory []vmware.Inventory
 }
 

@@ -61,9 +61,9 @@ func (id itemDelegate) Render(w io.Writer, m list.Model, index int, listItem lis
 	line := i.name
 
 	if index == m.Index() {
-		line = ListSelectedListItemStyle.Render("_|" + line)
+		line = listSelectedListItemStyle.Render("_|" + line)
 	} else {
-		line = ListItemStyle.Render(line)
+		line = listItemStyle.Render(line)
 	}
 
 	fmt.Fprint(w, line)
@@ -129,5 +129,35 @@ func getKindName(k kind) string {
 		return "Virtaul Machines"
 	default:
 		return ""
+	}
+}
+
+func renderItems(i item, k kind) string {
+	switch k {
+	case Datacenter:
+		dcName := fmt.Sprintf("Name: %s", i.name)
+		totalHost := fmt.Sprintf("\nHosts: %v", i.totalHosts)
+		totalVMs := fmt.Sprintf("\nVMs: %v", i.totalVMs)
+		return dcName + totalHost + totalVMs
+	case Host:
+		hostName := fmt.Sprintf("Name: %s", i.name)
+		uptime := fmt.Sprintf("\tUptime: %v days", i.uptime)
+		powerState := fmt.Sprintf("\tStatus: %v", i.powerState)
+		cpuModel := fmt.Sprintf("\nCPU Model: %v", i.cpuModel)
+		memorySize := fmt.Sprintf("\tMemory: %vGB", i.memorySize)
+		numCpuCores := fmt.Sprintf("\nCPU Cores: %v", i.numCpuCores)
+		numNics := fmt.Sprintf("\tNics: %v", i.numNics)
+		numHBAs := fmt.Sprintf("\tHBAs: %v", i.numHBAs)
+		return hostName + uptime + powerState + cpuModel + memorySize + numCpuCores + numNics + numHBAs
+	case VM:
+		vmName := fmt.Sprintf("Name: %s", i.name)
+		vmOS := fmt.Sprintf("\tOS: %s", i.os)
+		vmCPU := fmt.Sprintf("\nCPU: %v", i.cpu)
+		vmMemory := fmt.Sprintf("\tMemory: %vGB", i.memory)
+		vmIP := fmt.Sprintf("\nIP: %v", i.ip)
+		vmStatus := fmt.Sprintf("\tStatus: %s", i.status)
+		return vmName + vmOS + vmCPU + vmMemory + vmIP + vmStatus
+	default:
+		return i.name
 	}
 }

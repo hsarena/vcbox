@@ -10,14 +10,16 @@ func (m Model) View() string {
 		l := m.sides[k].list
 		l.SetShowFilter(false)
 		l.SetShowHelp(false)
-		l.Styles.Title = ListColorStyle
+		l.Styles.Title = listColorStyle
 		l.Title = getKindName(k)
-		
-		l.Styles.FilterPrompt.Foreground(ListColorStyle.GetBackground())
-		l.Styles.FilterCursor.Foreground(ListColorStyle.GetBackground())
-		renderedList = append(renderedList, ListStyle.Render(l.View()))
+
+		l.Styles.FilterPrompt.Foreground(listColorStyle.GetBackground())
+		l.Styles.FilterCursor.Foreground(listColorStyle.GetBackground())
+		renderedList = append(renderedList, listStyle.Render(l.View()))
 	}
-	m.view.Style = SideViewStyle
-	m.view.SetContent(lipgloss.JoinVertical(lipgloss.Top, renderedList...))
-	return m.view.View()
+	return lipgloss.JoinVertical(lipgloss.Top, renderedList...)
+}
+
+func (m Model) DetailView() string {
+	return renderItems(m.sides[m.activeSide].list.SelectedItem().(item), m.activeSide)
 }

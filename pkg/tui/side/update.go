@@ -4,7 +4,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch keypress := msg.String(); keypress {
@@ -13,10 +13,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "tab":
 			return m.updateByActiveSide(msg)
 		}
-	case tea.WindowSizeMsg:
-		h, v := DocStyle.GetFrameSize()
-		m.sides[m.activeSide].list.SetSize(msg.Width-h, msg.Height-v)
-
 	}
 	var cmd tea.Cmd
 	m.sides[m.activeSide].list, cmd = m.sides[m.activeSide].list.Update(msg)
