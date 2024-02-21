@@ -7,7 +7,7 @@ import (
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	var (
-		headerCmd, sideCmd tea.Cmd
+		headerCmd, sideCmd, tabCmd tea.Cmd
 	)
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -18,11 +18,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "up", "down", "tab":
+			m.tab, tabCmd = m.tab.Update(msg)
 			m.header, headerCmd = m.header.Update(msg)
 			m.side, sideCmd = m.side.Update(msg)
-			return m, tea.Batch(headerCmd, sideCmd)
-
+			return m, tea.Batch(headerCmd, sideCmd, tabCmd)
+		case "left", "right":
+			m.tab, tabCmd = m.tab.Update(msg)
+			return m, tabCmd
 		}
 	}
-	return m, tea.Batch(headerCmd, sideCmd)
+	return m, tea.Batch(headerCmd, sideCmd, tabCmd)
 }
