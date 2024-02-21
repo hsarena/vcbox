@@ -42,7 +42,7 @@ func (m Model) View() string {
 	tabBar := lipgloss.JoinHorizontal(lipgloss.Top, renderedTabs...)
 	page.WriteString(tabBar)
 	page.WriteString("\n")
-	page.WriteString(pageStyle.Width(m.view.Width).Render(m.tabs[m.activeTab].content))
+	page.WriteString(pageStyle.Render(m.tabs[m.activeTab].content))
 	return wordwrap.String(page.String(), m.view.Width)
 
 }
