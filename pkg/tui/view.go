@@ -14,5 +14,5 @@ func (m Model) View() string {
 	builder.WriteString(divider)
 	details := wordwrap.String(builder.String(), m.header.Width)
 	return lipgloss.JoinHorizontal(lipgloss.Top, m.side.View(),
-		lipgloss.JoinVertical(lipgloss.Top, details, m.tab.View()))
+		lipgloss.JoinVertical(lipgloss.Top, details, m.tab.View(m.selected)))
 }

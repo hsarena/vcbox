@@ -8,6 +8,7 @@ import (
 	"github.com/hsarena/vcbox/pkg/tui/tab"
 	"github.com/hsarena/vcbox/pkg/vmware"
 	"github.com/vmware/govmomi"
+	"github.com/vmware/govmomi/vim25/types"
 )
 
 type Model struct {
@@ -15,6 +16,7 @@ type Model struct {
 	side      side.Model
 	tab       tab.Model
 	inventory []vmware.Inventory
+	selected  types.ManagedObjectReference
 }
 
 func InitModel(client *govmomi.Client) Model {

@@ -3,6 +3,7 @@ package side
 import (
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/hsarena/vcbox/pkg/vmware"
+	"github.com/vmware/govmomi/vim25/types"
 )
 
 type Model struct {
@@ -46,6 +47,6 @@ func InitModel(inventory []vmware.Inventory) Model {
 	}
 }
 
-func (m Model) GetSelectedItem() (list.Item, kind) {
-	return m.sides[m.activeSide].list.SelectedItem(), m.activeSide
+func (m Model) GetSelectedObj() types.ManagedObjectReference {
+	return m.sides[m.activeSide].list.SelectedItem().(item).obj
 }

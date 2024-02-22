@@ -18,6 +18,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "up", "down", "tab":
+			m.selected = m.side.GetSelectedObj()
 			m.tab, tabCmd = m.tab.Update(msg)
 			m.header, headerCmd = m.header.Update(msg)
 			m.side, sideCmd = m.side.Update(msg)

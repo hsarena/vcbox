@@ -3,6 +3,7 @@ package tab
 import (
 	"github.com/charmbracelet/bubbles/viewport"
 	"github.com/hsarena/vcbox/pkg/vmware"
+	"github.com/vmware/govmomi/vim25/types"
 )
 
 type tabKind int
@@ -20,8 +21,9 @@ var (
 type Model struct {
 	view      viewport.Model
 	tabs      []tab
-	activeTab int
+	activeTab tabKind
 	metrics   *vmware.MetricsService
+	selected  types.ManagedObjectReference
 }
 
 type tab struct {

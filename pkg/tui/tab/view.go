@@ -11,7 +11,7 @@ import (
 	"github.com/vmware/govmomi/vim25/types"
 )
 
-func (m Model) View() string {
+func (m Model) View(selected types.ManagedObjectReference) string {
 
 	page := strings.Builder{}
 
@@ -19,7 +19,7 @@ func (m Model) View() string {
 
 	for i, t := range m.tabs {
 		var style lipgloss.Style
-		isFirst, isLast, isActive := i == 0, i == len(m.tabs)-1, i == m.activeTab
+		isFirst, isLast, isActive := i == 0, i == len(m.tabs)-1, tabKind(i) == m.activeTab
 		if isActive {
 			style = activeTabBarStyle.Copy()
 		} else {
@@ -42,6 +42,12 @@ func (m Model) View() string {
 	tabBar := lipgloss.JoinHorizontal(lipgloss.Top, renderedTabs...)
 	page.WriteString(tabBar)
 	page.WriteString("\n")
+
+	switch m.activeTab {
+	case Metrics:
+		m.tabs[m.activeTab].content = m.metricsView(selected)
+	}
+
 	page.WriteString(pageStyle.Render(m.tabs[m.activeTab].content))
 	return wordwrap.String(page.String(), m.view.Width)
 
@@ -71,15 +77,32 @@ func (m Model) metricsView(obj types.ManagedObjectReference) string {
 	for i, x := range metrics {
 		graph = append(graph, asciigraph.Plot(x, asciigraph.SeriesColors(asciigraph.DarkGoldenrod),
 			asciigraph.AxisColor(asciigraph.IndianRed),
-			asciigraph.Height(m.view.Height/6),
-			asciigraph.Width(m.view.Width/6),
+			asciigraph.Height(5),
+			asciigraph.Width(20),
 			asciigraph.Caption(util.MetricIdToString(i)),
-			asciigraph.Offset(5)))
+		))
+	}
+	totalGraphs := len(graph)
+	numRows := totalGraphs / 2
+	graphsPerRow := 2
 
-		builder.WriteString(lipgloss.JoinVertical(lipgloss.Top,
-			lipgloss.JoinHorizontal(lipgloss.Top, graph[:len(graph)/2]...), "\n\n\n",
-			lipgloss.JoinHorizontal(lipgloss.Top, graph[len(graph)/2:]...)))
+	// Calculate the total number of graphs
 
+	// Iterate over each row
+	for i := 0; i < numRows; i++ {
+		// Calculate the start and end indices for the graphs in the current row
+		start := i * graphsPerRow
+		end := start + graphsPerRow
+		if i == numRows-1 {
+			// If it's the last row, adjust the end index to include the remaining graphs
+			end = totalGraphs
+		}
+		// Join the graphs for the current row horizontally
+		row := lipgloss.JoinHorizontal(lipgloss.Top, graph[start:end]...)
+		// Append the current row to the string builder
+		builder.WriteString(row)
+		// Add a newline character to separate rows
+		builder.WriteString("\n")
 	}
 	details := wordwrap.String(builder.String(), m.view.Width)
 
